@@ -21,7 +21,7 @@ function GuestBrand() {
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <div style={{ filter: "grayscale(1) brightness(0.4)" }}>
+        <div style={{ filter: "grayscale(1) brightness(0.65)" }}>
           <HemisphereMark size={38} />
         </div>
       </div>
