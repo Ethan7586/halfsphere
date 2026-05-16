@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardHeader, CardLabel, Badge } from "@/components/primitives";
+import { Card, CardHeader, CardLabel } from "@/components/primitives";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Provider {
   id: string;
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
   const queryClient = useQueryClient();
+  const { tier } = useAuth();
 
   const { data, isLoading } = useQuery<{ data: Provider[] }>({
     queryKey: ["providers"],
@@ -228,6 +230,9 @@ export default function SettingsPage() {
           <SyncButton />
         </div>
       </Card>
+
+      {/* Permissions — admin only */}
+      {tier === "admin" && <PermissionsPanel />}
     </div>
   );
 }
@@ -288,5 +293,143 @@ function SyncButton() {
         </p>
       )}
     </div>
+  );
+}
+
+/* ── Permissions Panel (admin only) ── */
+interface UserRow {
+  id: string;
+  email: string;
+  display_name: string;
+  tier: string;
+  permissions: string[];
+  last_sign_in_at: string | null;
+}
+
+const ALL_PERMS = [
+  { key: "base", label: "基地监控" },
+  { key: "fleet", label: "舰队管理" },
+  { key: "budget", label: "预算设置" },
+  { key: "provider", label: "添加 Provider" },
+];
+
+function PermissionsPanel() {
+  const queryClient = useQueryClient();
+  const { data, isLoading } = useQuery<{ data: UserRow[] }>({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error("获取用户列表失败");
+      return res.json();
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, tier, permissions }: { id: string; tier?: string; permissions?: string[] }) => {
+      const res = await fetch(`/api/users/${id}/permissions`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier, permissions }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "更新失败");
+      }
+      return res.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["users"] }),
+  });
+
+  const users = data?.data ?? [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardLabel>用户权限 / Permissions</CardLabel>
+      </CardHeader>
+      <div style={{ padding: "16px 18px" }}>
+        {isLoading ? (
+          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12 }}>加载中...</div>
+        ) : users.length === 0 ? (
+          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12 }}>暂无用户</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {users.map((u) => (
+              <div
+                key={u.id}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "10px 12px",
+                  borderRadius: 6,
+                  border: "1px solid var(--border)",
+                  background: "var(--bg-elev-1)",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, color: "var(--fg)" }}>{u.display_name}</div>
+                  <div className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>{u.email}</div>
+                </div>
+
+                {/* Tier selector */}
+                <select
+                  value={u.tier}
+                  onChange={(e) => updateMutation.mutate({ id: u.id, tier: e.target.value })}
+                  style={{
+                    background: "var(--bg-elev-1)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 4,
+                    padding: "4px 8px",
+                    color: "var(--fg)",
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="user">user</option>
+                  <option value="admin">admin</option>
+                </select>
+
+                {/* Permission toggles */}
+                <div style={{ display: "flex", gap: 6 }}>
+                  {ALL_PERMS.map((p) => {
+                    const active = u.permissions.includes(p.key);
+                    return (
+                      <button
+                        key={p.key}
+                        onClick={() => {
+                          const next = active
+                            ? u.permissions.filter((x) => x !== p.key)
+                            : [...u.permissions, p.key];
+                          updateMutation.mutate({ id: u.id, permissions: next });
+                        }}
+                        title={p.label}
+                        style={{
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          border: `1px solid ${active ? "var(--green)" : "var(--border)"}`,
+                          background: active ? "rgba(74,222,128,0.08)" : "transparent",
+                          color: active ? "var(--green)" : "var(--fg-mute)",
+                          fontSize: 10,
+                          cursor: "pointer",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {updateMutation.isError && (
+          <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--red)" }}>
+            {updateMutation.error instanceof Error ? updateMutation.error.message : "更新失败"}
+          </p>
+        )}
+      </div>
+    </Card>
   );
 }

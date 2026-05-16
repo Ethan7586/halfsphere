@@ -190,16 +190,22 @@ export interface Database {
           user_id: string;
           tier: string;
           upgraded_at: string;
+          permissions: unknown[] | null;
+          granted_by: string | null;
         };
         Insert: {
           user_id: string;
           tier?: string;
           upgraded_at?: string;
+          permissions?: unknown[] | null;
+          granted_by?: string | null;
         };
         Update: {
           user_id?: string;
           tier?: string;
           upgraded_at?: string;
+          permissions?: unknown[] | null;
+          granted_by?: string | null;
         };
         Relationships: [
           {

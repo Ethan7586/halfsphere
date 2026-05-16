@@ -67,7 +67,8 @@ export async function middleware(request: NextRequest) {
   }
 
   /* ── Auth check for protected routes ── */
-  const protectedPrefixes = ["/", "/settings", "/budget", "/admin"];
+  /* 游客可访问 /（dashboard 预览），但 /settings /budget /admin 需要登录 */
+  const protectedPrefixes = ["/settings", "/budget", "/admin"];
   const isProtected = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );

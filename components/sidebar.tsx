@@ -7,18 +7,18 @@ import { useAuth } from "@/hooks/use-auth";
 import { HemisphereMark } from "@/components/hemisphere-mark";
 import { Flame, Bot, Server, Settings, Wallet, Shield } from "lucide-react";
 const navModules = [
-  { label: "燃烧", code: "BURNING / 01", href: "/", icon: Flame, active: true },
-  { label: "舰队", code: "FLEET / 02", href: "#", icon: Bot, locked: true },
-  { label: "基地", code: "BASE / 03", href: "#", icon: Server, locked: true },
+  { label: "燃烧", code: "BURNING / 01", href: "/", icon: Flame, perm: null },       // 所有人可见
+  { label: "舰队", code: "FLEET / 02", href: "/fleet", icon: Bot, perm: "fleet" },     // 需 fleet 权限
+  { label: "基地", code: "BASE / 03", href: "/base", icon: Server, perm: "base" },     // 需 base 权限
 ];
 
 const navControls = [
-  { label: "预算", code: "BUDGET", href: "/budget", icon: Wallet },
-  { label: "设置", code: "SETTINGS", href: "/settings", icon: Settings },
+  { label: "预算", code: "BUDGET", href: "/budget", icon: Wallet, needAuth: true },
+  { label: "设置", code: "SETTINGS", href: "/settings", icon: Settings, needAuth: true },
 ];
 
 const navAdmin = [
-  { label: "审核", code: "ADMIN", href: "/admin/applications", icon: Shield, adminOnly: true },
+  { label: "审核", code: "ADMIN", href: "/admin/applications", icon: Shield },
 ];
 
 function DividerV() {
@@ -158,7 +158,9 @@ function SystemClock() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { user, tier, signOut } = useAuth();
+  const { user, tier, permissions, signOut, hasPermission } = useAuth();
+  const isAdmin = tier === "admin";
+  const isGuest = !user;
 
   return (
     <aside
@@ -361,7 +363,7 @@ export function Sidebar() {
             </div>
             <div
               className="mono"
-              style={{ fontSize: 9.5, color: tier === "pro" ? "var(--amber)" : "var(--fg-mute)" }}
+              style={{ fontSize: 9.5, color: isAdmin ? "var(--amber)" : "var(--fg-mute)" }}
             >
               tier · {tier}
             </div>
@@ -393,17 +395,20 @@ export function Sidebar() {
       >
         Modules
       </div>
-      {navModules.map((item) => (
-        <NavItem
-          key={item.label}
-          icon={item.icon}
-          label={item.label}
-          code={item.code}
-          href={item.href}
-          active={pathname === item.href}
-          locked={item.locked}
-        />
-      ))}
+      {navModules.map((item) => {
+        const locked = item.perm ? !hasPermission(item.perm) : false;
+        return (
+          <NavItem
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            code={item.code}
+            href={locked ? "#" : item.href}
+            active={pathname === item.href}
+            locked={locked}
+          />
+        );
+      })}
 
       <div style={{ height: 1, background: "var(--border)", margin: "16px 18px" }} />
 
@@ -420,19 +425,23 @@ export function Sidebar() {
       >
         Controls
       </div>
-      {navControls.map((item) => (
-        <NavItem
-          key={item.label}
-          icon={item.icon}
-          label={item.label}
-          code={item.code}
-          href={item.href}
-          active={pathname === item.href}
-        />
-      ))}
+      {navControls.map((item) => {
+        const locked = item.needAuth && isGuest;
+        return (
+          <NavItem
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            code={item.code}
+            href={locked ? "#" : item.href}
+            active={pathname === item.href}
+            locked={locked}
+          />
+        );
+      })}
 
-      {/* admin nav — only for ethan7586@gsyen.com */}
-      {user?.email === "ethan7586@gsyen.com" && (
+      {/* admin nav */}
+      {isAdmin && (
         <>
           <div
             style={{
@@ -545,35 +554,59 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* logout */}
-        <button
-          onClick={signOut}
-          className="mono"
-          style={{
-            marginTop: 10,
-            width: "100%",
-            padding: "6px 0",
-            background: "transparent",
-            border: "1px solid var(--border)",
-            borderRadius: 4,
-            color: "var(--fg-mute)",
-            fontSize: 9.5,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            cursor: "pointer",
-            transition: "all .15s ease",
-          }}
-          onMouseEnter={(e) => {
-            (e.target as HTMLElement).style.borderColor = "var(--red)";
-            (e.target as HTMLElement).style.color = "var(--red)";
-          }}
-          onMouseLeave={(e) => {
-            (e.target as HTMLElement).style.borderColor = "var(--border)";
-            (e.target as HTMLElement).style.color = "var(--fg-mute)";
-          }}
-        >
-          sign out
-        </button>
+        {/* login / logout */}
+        {isGuest ? (
+          <Link href="/login" style={{ textDecoration: "none" }}>
+            <button
+              className="mono"
+              style={{
+                marginTop: 10,
+                width: "100%",
+                padding: "6px 0",
+                background: "transparent",
+                border: "1px solid var(--amber-line)",
+                borderRadius: 4,
+                color: "var(--amber)",
+                fontSize: 9.5,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "all .15s ease",
+              }}
+            >
+              sign in
+            </button>
+          </Link>
+        ) : (
+          <button
+            onClick={signOut}
+            className="mono"
+            style={{
+              marginTop: 10,
+              width: "100%",
+              padding: "6px 0",
+              background: "transparent",
+              border: "1px solid var(--border)",
+              borderRadius: 4,
+              color: "var(--fg-mute)",
+              fontSize: 9.5,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              transition: "all .15s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLElement).style.borderColor = "var(--red)";
+              (e.target as HTMLElement).style.color = "var(--red)";
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLElement).style.borderColor = "var(--border)";
+              (e.target as HTMLElement).style.color = "var(--fg-mute)";
+            }}
+          >
+            sign out
+          </button>
+        )}
       </div>
     </aside>
   );

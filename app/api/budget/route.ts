@@ -5,16 +5,12 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getUserTier } from "@/lib/auth";
+import { requireAuth as requireAuthLib } from "@/lib/auth";
 
-async function requirePro(supabase: any) {
+async function requireAuthBudget(supabase: any) {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
     return { error: NextResponse.json({ error: "未登录" }, { status: 401 }), user: null };
-  }
-  const tier = await getUserTier(user.id);
-  if (tier !== "pro") {
-    return { error: NextResponse.json({ error: "Pro 权限 required" }, { status: 403 }), user: null };
   }
   return { error: null, user };
 }
@@ -59,7 +55,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const { error: proError, user } = await requirePro(supabase);
+    const { error: proError, user } = await requireAuthBudget(supabase);
     if (proError) return proError;
 
     const body = await request.json();

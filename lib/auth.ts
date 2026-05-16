@@ -1,40 +1,76 @@
-/**
- * 半球 halfsphere - Auth 辅助函数
- */
 import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
 
-export async function getCurrentUser() {
-  const supabase = await createClient();
-  const { data, error } = await supabase.auth.getUser();
-  if (error || !data.user) return null;
-  return data.user;
+/* ── Types ── */
+export interface UserTier {
+  tier: "guest" | "user" | "admin";
+  permissions: string[];
+  granted_by: string | null;
 }
 
-export async function getUserTier(userId: string): Promise<"free" | "pro"> {
+/* ── Auth guard ── */
+export async function requireAuth() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error || !user) {
+    return { user: null, error: NextResponse.json({ error: "未登录" }, { status: 401 }) };
+  }
+  return { user, error: null };
+}
+
+/* ── Fetch user's tier & permissions ── */
+export async function getUserTier(userId: string): Promise<UserTier | null> {
+  const supabase = await createClient();
+  const { data } = await supabase
     .from("user_tiers")
-    .select("tier")
+    .select("tier, permissions, granted_by")
     .eq("user_id", userId)
     .single();
 
-  if (error || !data) return "free";
-  return data.tier as "free" | "pro";
+  if (!data) return null;
+  return {
+    tier: data.tier as UserTier["tier"],
+    permissions: (data.permissions as string[]) ?? [],
+    granted_by: data.granted_by,
+  };
 }
 
-export async function requireAuth() {
-  const user = await getCurrentUser();
-  if (!user) {
-    throw new Error("Unauthorized");
+/* ── Admin guard ── */
+export async function requireAdmin() {
+  const { user, error } = await requireAuth();
+  if (error) return { user: null, tier: null, error };
+
+  const tier = await getUserTier(user.id);
+  if (tier?.tier !== "admin") {
+    return { user, tier, error: NextResponse.json({ error: "需要管理员权限" }, { status: 403 }) };
   }
-  return user;
+  return { user, tier, error: null };
+}
+
+/* ── Permission guard ── */
+export async function requirePermission(permission: string) {
+  const { user, error } = await requireAuth();
+  if (error) return { user: null, tier: null, error };
+
+  const tier = await getUserTier(user.id);
+  // admin 自动拥有所有权限
+  if (tier?.tier === "admin") {
+    return { user, tier, error: null };
+  }
+  // user 需检查权限列表
+  if (tier?.permissions?.includes(permission)) {
+    return { user, tier, error: null };
+  }
+  return { user, tier, error: NextResponse.json({ error: `缺少权限: ${permission}` }, { status: 403 }) };
+}
+
+/* ── Legacy helpers (keep for compat) ── */
+const ADMIN_UIDS = new Set(["29964ebd-c191-4ddf-ad28-bed931cab458"]);
+
+export function isAdmin(userId: string): boolean {
+  return ADMIN_UIDS.has(userId);
 }
 
 export async function requirePro() {
-  const user = await requireAuth();
-  const tier = await getUserTier(user.id);
-  if (tier !== "pro") {
-    throw new Error("Pro tier required");
-  }
-  return user;
+  return requireAdmin(); // pro → admin 兼容
 }

@@ -4,16 +4,20 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+export type Tier = "guest" | "user" | "admin";
+
 interface AuthState {
   user: User | null;
-  tier: "free" | "pro";
+  tier: Tier;
+  permissions: string[];
   loading: boolean;
 }
 
 export function useAuth() {
   const [state, setState] = useState<AuthState>({
     user: null,
-    tier: "free",
+    tier: "guest",
+    permissions: [],
     loading: true,
   });
   const supabase = createClient();
@@ -25,18 +29,21 @@ export function useAuth() {
       const { data, error } = await supabase.auth.getUser();
       const user = error ? null : data.user;
 
-      let tier: "free" | "pro" = "free";
+      let tier: Tier = "guest";
+      let permissions: string[] = [];
+
       if (user) {
         const { data: tierData } = await supabase
           .from("user_tiers")
-          .select("tier")
+          .select("tier, permissions")
           .eq("user_id", user.id)
           .single();
-        if (tierData?.tier === "pro") tier = "pro";
+        tier = (tierData?.tier as Tier) || "user";
+        permissions = (tierData?.permissions as string[]) ?? [];
       }
 
       if (mounted) {
-        setState({ user, tier, loading: false });
+        setState({ user, tier, permissions, loading: false });
       }
     }
 
@@ -44,26 +51,27 @@ export function useAuth() {
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        if (mounted) {
-          const user = session?.user ?? null;
-          setState((prev) => ({ ...prev, user }));
-          // refetch tier when auth state changes
-          if (user) {
-            supabase
-              .from("user_tiers")
-              .select("tier")
-              .eq("user_id", user.id)
-              .single()
-              .then(({ data }) => {
-                if (mounted && data?.tier) {
-                  setState((prev) => ({
-                    ...prev,
-                    tier: data.tier as "free" | "pro",
-                  }));
-                }
-              });
-          }
+        if (!mounted) return;
+        const user = session?.user ?? null;
+        if (!user) {
+          setState({ user: null, tier: "guest", permissions: [], loading: false });
+          return;
         }
+        setState((prev) => ({ ...prev, user }));
+        supabase
+          .from("user_tiers")
+          .select("tier, permissions")
+          .eq("user_id", user.id)
+          .single()
+          .then(({ data }) => {
+            if (mounted && data) {
+              setState((prev) => ({
+                ...prev,
+                tier: (data.tier as Tier) || "user",
+                permissions: (data.permissions as string[]) ?? [],
+              }));
+            }
+          });
       }
     );
 
@@ -75,9 +83,14 @@ export function useAuth() {
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    setState({ user: null, tier: "free", loading: false });
+    setState({ user: null, tier: "guest", permissions: [], loading: false });
     window.location.href = "/login";
   };
 
-  return { ...state, signOut };
+  const hasPermission = (perm: string) => {
+    if (state.tier === "admin") return true;
+    return state.permissions.includes(perm);
+  };
+
+  return { ...state, signOut, hasPermission };
 }
