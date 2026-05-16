@@ -354,14 +354,17 @@ export function Sidebar() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <div
               style={{
-                fontSize: 12,
+                fontSize: isGuest ? 15 : 12,
+                fontFamily: isGuest ? "var(--font-display)" : undefined,
+                fontWeight: isGuest ? 600 : undefined,
+                letterSpacing: isGuest ? "-0.01em" : undefined,
                 color: "var(--fg)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
               }}
             >
-              {user?.email ?? "guest@halfsphere"}
+              {user?.email ?? "guest"}
             </div>
             <div
               className="mono"

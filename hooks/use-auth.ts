@@ -26,24 +26,30 @@ export function useAuth() {
     let mounted = true;
 
     async function getUser() {
-      const { data, error } = await supabase.auth.getUser();
-      const user = error ? null : data.user;
+      try {
+        const { data, error } = await supabase.auth.getUser();
+        const user = error ? null : data.user;
 
-      let tier: Tier = "guest";
-      let permissions: string[] = [];
+        let tier: Tier = "guest";
+        let permissions: string[] = [];
 
-      if (user) {
-        const { data: tierData } = await supabase
-          .from("user_tiers")
-          .select("tier, permissions")
-          .eq("user_id", user.id)
-          .single();
-        tier = (tierData?.tier as Tier) || "user";
-        permissions = (tierData?.permissions as string[]) ?? [];
-      }
+        if (user) {
+          const { data: tierData } = await supabase
+            .from("user_tiers")
+            .select("tier, permissions")
+            .eq("user_id", user.id)
+            .single();
+          tier = (tierData?.tier as Tier) || "user";
+          permissions = (tierData?.permissions as string[]) ?? [];
+        }
 
-      if (mounted) {
-        setState({ user, tier, permissions, loading: false });
+        if (mounted) {
+          setState({ user, tier, permissions, loading: false });
+        }
+      } catch {
+        if (mounted) {
+          setState({ user: null, tier: "guest", permissions: [], loading: false });
+        }
       }
     }
 
