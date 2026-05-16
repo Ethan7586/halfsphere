@@ -10,6 +10,16 @@ import { decrypt } from "@/lib/crypto";
 import * as openaiProvider from "@/lib/providers/openai";
 import * as anthropicProvider from "@/lib/providers/anthropic";
 
+/* timing-safe comparison helper */
+function timingSafeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 const PROVIDER_FETCHERS: Record<string, typeof openaiProvider.fetchUsage> = {
   openai: openaiProvider.fetchUsage,
   anthropic: anthropicProvider.fetchUsage,
@@ -29,7 +39,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!authHeader || authHeader !== `Bearer ${expectedSecret}`) {
+    const expectedBearer = `Bearer ${expectedSecret}`;
+    if (!authHeader || !timingSafeCompare(authHeader, expectedBearer)) {
       return NextResponse.json(
         { error: "未授权" },
         { status: 401 }

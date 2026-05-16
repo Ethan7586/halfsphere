@@ -5,6 +5,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "./types";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -19,11 +21,18 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
+              cookieStore.set(name, value, {
+                ...options,
+                httpOnly: true,
+                secure: isProd,
+                sameSite: "lax",
+                /* 7 days in production, session in dev */
+                maxAge: isProd ? 60 * 60 * 24 * 7 : undefined,
+              });
             });
           } catch {
             // setAll 在 Server Component 中可能抛出错误
-            // 这里可以安全忽略，因为中间件会处理 cookie
+            // 中间件会处理 cookie 刷新
           }
         },
       },
