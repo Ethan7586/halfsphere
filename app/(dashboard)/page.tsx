@@ -14,6 +14,7 @@ import {
 } from "@/components/primitives";
 import { TrendChart } from "@/components/trend-chart";
 import { BaseCard } from "./components/base-card";
+import { useAuth } from "@/hooks/use-auth";
 
 /* ── types ── */
 interface UsageData {
@@ -119,11 +120,14 @@ export default function DashboardPage() {
   const used = totalCost;
 
   const providerList = providersData?.data ?? [];
+  const { user } = useAuth();
+  const isGuest = !user;
 
   if (!mounted) return null;
 
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative", zIndex: 1 }}>
+      {isGuest && <GuestBanner />}
       <StatusBar />
       <div
         style={{
@@ -657,5 +661,48 @@ function RangePill({ label, active }: { label: string; active?: boolean }) {
     >
       {label}
     </button>
+  );
+}
+
+/* ── Guest banner ── */
+function GuestBanner() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        padding: "10px 28px",
+        background: "rgba(255,176,32,0.06)",
+        borderBottom: "1px solid var(--amber-line)",
+        fontSize: 12,
+      }}
+      className="mono"
+    >
+      <span style={{ color: "var(--fg-mute)" }}>PREVIEW MODE · 游客预览</span>
+      <a
+        href="/login"
+        style={{
+          color: "var(--amber)",
+          textDecoration: "none",
+          fontWeight: 500,
+          letterSpacing: "0.1em",
+        }}
+      >
+        登录 / SIGN IN
+      </a>
+      <span style={{ color: "var(--fg-faint)" }}>·</span>
+      <a
+        href="/apply"
+        style={{
+          color: "var(--fg-dim)",
+          textDecoration: "none",
+          letterSpacing: "0.08em",
+        }}
+      >
+        申请访问
+      </a>
+    </div>
   );
 }
