@@ -69,6 +69,15 @@ CREATE TABLE IF NOT EXISTS public.budgets (
 CREATE UNIQUE INDEX idx_budgets_user_id ON public.budgets(user_id);
 
 -- ============================================
+-- 权限：给 authenticated 角色授权
+-- ============================================
+GRANT ALL ON public.providers TO authenticated;
+GRANT ALL ON public.usage_snapshots TO authenticated;
+GRANT ALL ON public.budgets TO authenticated;
+
+GRANT USAGE ON SCHEMA public TO authenticated;
+
+-- ============================================
 -- RLS (Row Level Security) 策略
 -- ============================================
 

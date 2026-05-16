@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Card,
@@ -42,24 +42,6 @@ interface BudgetCfg {
 
 /* ── helpers ── */
 const fmtUSD = (n: number) => `$${n.toFixed(2)}`;
-const fmtDateLbl = (d: string) => {
-  const x = new Date(d);
-  return `${x.getMonth() + 1}/${x.getDate()}`;
-};
-
-/* ── demo trend data (30 days) ── */
-const TREND_DATA = [
-  { date: "Apr 17", value: 8.42 }, { date: "Apr 18", value: 9.1 }, { date: "Apr 19", value: 6.2 },
-  { date: "Apr 20", value: 7.8 }, { date: "Apr 21", value: 11.4 }, { date: "Apr 22", value: 13.2 },
-  { date: "Apr 23", value: 10.1 }, { date: "Apr 24", value: 9.5 }, { date: "Apr 25", value: 8.2 },
-  { date: "Apr 26", value: 5.4 }, { date: "Apr 27", value: 5.1 }, { date: "Apr 28", value: 9.3 },
-  { date: "Apr 29", value: 12.6 }, { date: "Apr 30", value: 14.2 }, { date: "May 01", value: 11.8 },
-  { date: "May 02", value: 7.2 }, { date: "May 03", value: 6.8 }, { date: "May 04", value: 10.4 },
-  { date: "May 05", value: 13.1 }, { date: "May 06", value: 15.2 }, { date: "May 07", value: 18.3 },
-  { date: "May 08", value: 16.2 }, { date: "May 09", value: 12.4 }, { date: "May 10", value: 11.5 },
-  { date: "May 11", value: 14.2 }, { date: "May 12", value: 17.8 }, { date: "May 13", value: 19.4 },
-  { date: "May 14", value: 14.2 }, { date: "May 15", value: 13.8 }, { date: "May 16", value: 10.4 },
-];
 
 const ACTIVITY = [
   { t: "04m", code: "SYNC.OPENAI", msg: "完整同步 · 24 条新快照", tone: "green" as const },
@@ -110,6 +92,25 @@ export default function DashboardPage() {
       return res.json();
     },
   });
+
+  const trendData = useMemo(() => {
+    if (!usage?.data) return [];
+    return Object.entries(usage.data)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([dateStr, { cost }]) => {
+        const d = new Date(dateStr + "T00:00:00Z");
+        return { date: `${d.getMonth() + 1}/${d.getDate()}`, value: cost };
+      });
+  }, [usage]);
+
+  const trendDelta = useMemo(() => {
+    if (trendData.length < 10) return null;
+    const half = Math.floor(trendData.length / 2);
+    const first = trendData.slice(0, half).reduce((s, d) => s + d.value, 0);
+    const last = trendData.slice(half).reduce((s, d) => s + d.value, 0);
+    if (first === 0) return null;
+    return ((last - first) / first) * 100;
+  }, [trendData]);
 
   const totalCost = usage?.summary.total_cost ?? 0;
   const budgetCfg = budget?.data?.[0];
@@ -167,7 +168,7 @@ export default function DashboardPage() {
 
         {/* row 1: hero + budget */}
         <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 18 }}>
-          <HeroPanel totalCost={totalCost} inputTokens={usage?.summary.total_input_tokens ?? 0} outputTokens={usage?.summary.total_output_tokens ?? 0} />
+          <HeroPanel totalCost={totalCost} inputTokens={usage?.summary.total_input_tokens ?? 0} outputTokens={usage?.summary.total_output_tokens ?? 0} trendDelta={trendDelta} />
           <BudgetPanel used={used} limit={limit} warn={budgetCfg?.warn_threshold ?? 80} alert={budgetCfg?.alert_threshold ?? 95} />
         </div>
 
@@ -202,7 +203,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <div style={{ padding: "10px 8px 8px" }}>
-              <TrendChart data={TREND_DATA} height={240} />
+              <TrendChart data={trendData} height={240} />
             </div>
           </Card>
           <ActivityFeed />
@@ -329,7 +330,7 @@ function Divider() {
 }
 
 /* ── HeroPanel ── */
-function HeroPanel({ totalCost, inputTokens, outputTokens }: { totalCost: number; inputTokens: number; outputTokens: number }) {
+function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { totalCost: number; inputTokens: number; outputTokens: number; trendDelta?: number | null }) {
   return (
     <Card style={{ padding: 0, overflow: "hidden" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", minHeight: 220 }}>
@@ -356,14 +357,20 @@ function HeroPanel({ totalCost, inputTokens, outputTokens }: { totalCost: number
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M5 1 L9 6 L1 6 Z" fill="var(--red)" />
-              </svg>
-              <span className="mono tabular" style={{ fontSize: 12, color: "var(--red)" }}>+12.4%</span>
-              <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>vs 上月</span>
-            </div>
-            <Divider />
+            {trendDelta !== null && trendDelta !== undefined && (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d={trendDelta >= 0 ? "M5 1 L9 6 L1 6 Z" : "M5 9 L9 4 L1 4 Z"} fill={trendDelta >= 0 ? "var(--red)" : "var(--green)"} />
+                  </svg>
+                  <span className="mono tabular" style={{ fontSize: 12, color: trendDelta >= 0 ? "var(--red)" : "var(--green)" }}>
+                    {trendDelta > 0 ? "+" : ""}{trendDelta.toFixed(1)}%
+                  </span>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>趋势</span>
+                </div>
+                <Divider />
+              </>
+            )}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>日均</span>
               <span className="mono tabular" style={{ fontSize: 12, color: "var(--fg)" }}>
@@ -381,20 +388,20 @@ function HeroPanel({ totalCost, inputTokens, outputTokens }: { totalCost: number
         </div>
 
         <div style={{ display: "grid", gridTemplateRows: "1fr 1fr" }}>
-          <SubStat label="TOTAL TOKENS · IN" value={inputTokens > 0 ? (inputTokens / 1e6).toFixed(2) + "M" : "0"} delta="+8%" />
-          <SubStat label="TOTAL TOKENS · OUT" value={outputTokens > 0 ? (outputTokens / 1e6).toFixed(2) + "M" : "0"} delta="+14%" sep />
+          <SubStat label="TOTAL TOKENS · IN" value={inputTokens > 0 ? (inputTokens / 1e6).toFixed(2) + "M" : "0"} />
+          <SubStat label="TOTAL TOKENS · OUT" value={outputTokens > 0 ? (outputTokens / 1e6).toFixed(2) + "M" : "0"} sep />
         </div>
       </div>
     </Card>
   );
 }
 
-function SubStat({ label, value, delta, sep }: { label: string; value: string; delta: string; sep?: boolean }) {
+function SubStat({ label, value, delta, sep }: { label: string; value: string; delta?: string; sep?: boolean }) {
   return (
     <div style={{ padding: "20px 24px", borderTop: sep ? "1px solid var(--border)" : "none", display: "flex", flexDirection: "column", justifyContent: "center", gap: 8 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span className="mono" style={{ fontSize: 10, color: "var(--fg-mute)", letterSpacing: "0.18em" }}>{label}</span>
-        <span className="mono tabular" style={{ fontSize: 11, color: "var(--green)" }}>{delta}</span>
+        {delta && <span className="mono tabular" style={{ fontSize: 11, color: "var(--green)" }}>{delta}</span>}
       </div>
       <div className="mono tabular" style={{ fontSize: 30, color: "var(--fg)", fontWeight: 500, letterSpacing: "-0.02em" }}>
         {value}

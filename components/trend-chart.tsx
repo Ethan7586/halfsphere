@@ -29,6 +29,25 @@ export function TrendChart({
     return () => ro.disconnect();
   }, []);
 
+  if (data.length === 0) {
+    return (
+      <div
+        style={{
+          height,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#6E6E76",
+          fontSize: 12,
+          fontFamily: "JetBrains Mono",
+          letterSpacing: "0.1em",
+        }}
+      >
+        NO USAGE DATA
+      </div>
+    );
+  }
+
   const innerW = Math.max(0, w - padding.l - padding.r);
   const innerH = height - padding.t - padding.b;
 

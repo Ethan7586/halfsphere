@@ -4,6 +4,7 @@
  * 文档: https://platform.openai.com/docs/api-reference/usage
  */
 import type { UsageSnapshot, FetchUsageFn } from "./types";
+import { OPENAI_PRICING } from "./pricing";
 
 interface OpenAIUsageItem {
   object: string;
@@ -34,28 +35,9 @@ interface OpenAICompletionUsageResponse {
   next_page?: string;
 }
 
-/**
- * OpenAI 定价表（每 1K tokens，美元）
- * 用于在 API 不返回金额时估算成本
- * 仅包含常见模型，实际使用时应定期更新
- */
-const PRICING: Record<string, { input: number; output: number }> = {
-  "gpt-4o": { input: 0.0025, output: 0.01 },
-  "gpt-4o-mini": { input: 0.00015, output: 0.0006 },
-  "gpt-4-turbo": { input: 0.01, output: 0.03 },
-  "gpt-4": { input: 0.03, output: 0.06 },
-  "gpt-3.5-turbo": { input: 0.0005, output: 0.0015 },
-  "o1-preview": { input: 0.015, output: 0.06 },
-  "o1-mini": { input: 0.003, output: 0.012 },
-  "text-embedding-3-small": { input: 0.00002, output: 0 },
-  "text-embedding-3-large": { input: 0.00013, output: 0 },
-  "dall-e-3": { input: 0.04, output: 0 }, // 按图片，这里简化
-};
-
 function estimateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const price = PRICING[model];
+  const price = OPENAI_PRICING[model];
   if (!price) {
-    // 未知模型，按 gpt-4o 估算
     return (inputTokens / 1000) * 0.0025 + (outputTokens / 1000) * 0.01;
   }
   return (inputTokens / 1000) * price.input + (outputTokens / 1000) * price.output;

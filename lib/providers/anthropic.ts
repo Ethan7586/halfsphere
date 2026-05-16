@@ -5,6 +5,7 @@
  * 文档: https://docs.anthropic.com/en/api/admin-api/usage-reports
  */
 import type { UsageSnapshot, FetchUsageFn } from "./types";
+import { ANTHROPIC_PRICING } from "./pricing";
 
 interface AnthropicUsageResponse {
   data: Array<{
@@ -30,25 +31,9 @@ interface AnthropicUsageResponse {
   next_cursor?: string;
 }
 
-/**
- * Anthropic 定价表（每 1K tokens，美元）
- * 用于估算成本
- */
-const PRICING: Record<string, { input: number; output: number }> = {
-  "claude-3-5-sonnet-20241022": { input: 0.003, output: 0.015 },
-  "claude-3-5-sonnet-20240620": { input: 0.003, output: 0.015 },
-  "claude-3-opus-20240229": { input: 0.015, output: 0.075 },
-  "claude-3-sonnet-20240229": { input: 0.003, output: 0.015 },
-  "claude-3-haiku-20240307": { input: 0.00025, output: 0.00125 },
-  "claude-2.1": { input: 0.008, output: 0.024 },
-  "claude-2.0": { input: 0.008, output: 0.024 },
-  "claude-instant-1.2": { input: 0.0008, output: 0.0024 },
-};
-
 function estimateCost(model: string, inputTokens: number, outputTokens: number): number {
-  const price = PRICING[model];
+  const price = ANTHROPIC_PRICING[model];
   if (!price) {
-    // 未知模型，按 sonnet 估算
     return (inputTokens / 1000) * 0.003 + (outputTokens / 1000) * 0.015;
   }
   return (inputTokens / 1000) * price.input + (outputTokens / 1000) * price.output;
