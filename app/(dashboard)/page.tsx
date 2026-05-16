@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ import { TrendChart } from "@/components/trend-chart";
 import { BaseCard } from "./components/base-card";
 import { useAuth } from "@/hooks/use-auth";
 
-/* ── types ── */
+/* ΓöÇΓöÇ types ΓöÇΓöÇ */
 interface UsageData {
   range: string;
   start_date: string;
@@ -42,18 +42,18 @@ interface BudgetCfg {
   alert_threshold: number;
 }
 
-/* ── helpers ── */
+/* ΓöÇΓöÇ helpers ΓöÇΓöÇ */
 const fmtUSD = (n: number) => `$${n.toFixed(2)}`;
 
 const ACTIVITY = [
-  { t: "04m", code: "SYNC.OPENAI", msg: "完整同步 · 24 条新快照", tone: "green" as const },
-  { t: "12m", code: "BURN.SPIKE", msg: "claude-sonnet-4.5 单次 $4.20 (>P95)", tone: "amber" as const },
-  { t: "38m", code: "SYNC.ANTHROPIC", msg: "完整同步 · 9 条新快照", tone: "green" as const },
-  { t: "1h", code: "BUDGET.WARN", msg: "日预算消耗 84% — 阈值 80%", tone: "amber" as const },
-  { t: "3h", code: "PROVIDER.ADD", msg: "openrouter 已绑定 (sk-or…7f2a)", tone: "green" as const },
+  { t: "04m", code: "SYNC.OPENAI", msg: "σ«îµò┤σÉîµ¡Ñ ┬╖ 24 µ¥íµû░σ┐½τàº", tone: "green" as const },
+  { t: "12m", code: "BURN.SPIKE", msg: "claude-sonnet-4.5 σìòµ¼í $4.20 (>P95)", tone: "amber" as const },
+  { t: "38m", code: "SYNC.ANTHROPIC", msg: "σ«îµò┤σÉîµ¡Ñ ┬╖ 9 µ¥íµû░σ┐½τàº", tone: "green" as const },
+  { t: "1h", code: "BUDGET.WARN", msg: "µùÑΘóäτ«ùµ╢êΦÇù 84% ΓÇö ΘÿêσÇ╝ 80%", tone: "amber" as const },
+  { t: "3h", code: "PROVIDER.ADD", msg: "openrouter σ╖▓τ╗æσ«Ü (sk-orΓÇª7f2a)", tone: "green" as const },
 ];
 
-/* ════════════════════════════════════════ */
+/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ */
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -63,7 +63,7 @@ export default function DashboardPage() {
     queryKey: ["usage", "30d"],
     queryFn: async () => {
       const res = await fetch("/api/usage?range=30d&group_by=date");
-      if (!res.ok) throw new Error("获取 usage 失败");
+      if (!res.ok) throw new Error("ΦÄ╖σÅû usage σñ▒Φ┤Ñ");
       return res.json();
     },
   });
@@ -72,7 +72,7 @@ export default function DashboardPage() {
     queryKey: ["providers"],
     queryFn: async () => {
       const res = await fetch("/api/providers");
-      if (!res.ok) throw new Error("获取 providers 失败");
+      if (!res.ok) throw new Error("ΦÄ╖σÅû providers σñ▒Φ┤Ñ");
       return res.json();
     },
   });
@@ -81,7 +81,7 @@ export default function DashboardPage() {
     queryKey: ["budget"],
     queryFn: async () => {
       const res = await fetch("/api/budget");
-      if (!res.ok) throw new Error("获取预算失败");
+      if (!res.ok) throw new Error("ΦÄ╖σÅûΘóäτ«ùσñ▒Φ┤Ñ");
       return res.json();
     },
   });
@@ -90,7 +90,7 @@ export default function DashboardPage() {
     queryKey: ["usage", "30d", "provider"],
     queryFn: async () => {
       const res = await fetch("/api/usage?range=30d&group_by=provider");
-      if (!res.ok) throw new Error("获取 provider usage 失败");
+      if (!res.ok) throw new Error("ΦÄ╖σÅû provider usage σñ▒Φ┤Ñ");
       return res.json();
     },
   });
@@ -128,7 +128,7 @@ export default function DashboardPage() {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative", zIndex: 1 }}>
       {isGuest && <GuestBanner />}
-      <StatusBar isGuest={isGuest} />
+      <StatusBar />
       <div
         style={{
           padding: "24px 28px",
@@ -150,7 +150,7 @@ export default function DashboardPage() {
                 marginBottom: 6,
               }}
             >
-              MISSION CONTROL · BURNING
+              MISSION CONTROL ┬╖ BURNING
             </div>
             <h1
               style={{
@@ -161,7 +161,7 @@ export default function DashboardPage() {
                 color: "var(--fg)",
               }}
             >
-              {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long" })} · 燃烧总览
+              {new Date().toLocaleDateString("zh-CN", { year: "numeric", month: "long" })} ┬╖ τçâτâºµÇ╗Φºê
             </h1>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -201,10 +201,10 @@ export default function DashboardPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 18 }}>
           <Card>
             <CardHeader>
-              <CardLabel badge={<Badge tone="amber">USD / DAY</Badge>}>30 天消耗趋势 / Burn trajectory</CardLabel>
+              <CardLabel badge={<Badge tone="amber">USD / DAY</Badge>}>30 σñ⌐µ╢êΦÇùΦ╢ïσè┐ / Burn trajectory</CardLabel>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }} className="mono">
-                <LegendDot color="var(--amber)" label="实际" />
-                <LegendDot color="var(--amber)" dashed label="日预算" />
+                <LegendDot color="var(--amber)" label="σ«₧ΘÖà" />
+                <LegendDot color="var(--amber)" dashed label="µùÑΘóäτ«ù" />
               </div>
             </CardHeader>
             <div style={{ padding: "10px 8px 8px" }}>
@@ -231,13 +231,13 @@ export default function DashboardPage() {
             className="mono"
             style={{ fontSize: 10, color: "var(--fg-faint)", letterSpacing: "0.18em" }}
           >
-            HALFSPHERE · BURNING / 01 · halfsphere.com
+            HALFSPHERE ┬╖ BURNING / 01 ┬╖ halfsphere.com
           </span>
           <span
             className="mono"
             style={{ fontSize: 10, color: "var(--fg-faint)", letterSpacing: "0.18em" }}
           >
-            DATA · 30D ROLLING · NEXT SYNC SOON
+            DATA ┬╖ 30D ROLLING ┬╖ NEXT SYNC SOON
           </span>
         </div>
       </div>
@@ -245,8 +245,8 @@ export default function DashboardPage() {
   );
 }
 
-/* ── StatusBar ── */
-function StatusBar({ isGuest }: { isGuest: boolean }) {
+/* ΓöÇΓöÇ StatusBar ΓöÇΓöÇ */
+function StatusBar() {
   return (
     <div
       style={{
@@ -270,7 +270,7 @@ function StatusBar({ isGuest }: { isGuest: boolean }) {
       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ color: "var(--fg-faint)", letterSpacing: "0.18em" }}>CYCLE</span>
         <span style={{ color: "var(--fg-dim)" }}>{new Date().toISOString().slice(0, 7)}</span>
-        <span style={{ color: "var(--fg-faint)" }}>·</span>
+        <span style={{ color: "var(--fg-faint)" }}>┬╖</span>
         <span style={{ color: "var(--fg-dim)" }}>DAY {new Date().getDate()} / 31</span>
       </div>
       <Divider />
@@ -303,77 +303,32 @@ function StatusBar({ isGuest }: { isGuest: boolean }) {
       </div>
       <div style={{ flex: 1 }} />
 
-      {isGuest ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <a
-            href="/login"
-            className="mono"
-            style={{
-              background: "var(--amber-dim)",
-              border: "1px solid var(--amber-line)",
-              color: "var(--amber)",
-              fontSize: 10.5,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "6px 14px",
-              borderRadius: 4,
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            sign in
-          </a>
-          <a
-            href="/apply"
-            className="mono"
-            style={{
-              background: "transparent",
-              border: "1px solid var(--border-strong)",
-              color: "var(--fg-dim)",
-              fontSize: 10.5,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "6px 14px",
-              borderRadius: 4,
-              textDecoration: "none",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            apply
-          </a>
-        </div>
-      ) : (
-        <button
-          className="mono"
-          style={{
-            background: "transparent",
-            border: "1px solid var(--border-strong)",
-            color: "var(--fg-dim)",
-            fontSize: 10.5,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            padding: "6px 12px",
-            borderRadius: 4,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            cursor: "pointer",
-          }}
-          onClick={async () => {
-            await fetch("/api/usage/sync", { method: "POST" });
-            window.location.reload();
-          }}
-        >
-          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 3v3h-3" />
-          </svg>
-          sync now
-        </button>
-      )}
+      <button
+        className="mono"
+        style={{
+          background: "transparent",
+          border: "1px solid var(--border-strong)",
+          color: "var(--fg-dim)",
+          fontSize: 10.5,
+          letterSpacing: "0.12em",
+          textTransform: "uppercase",
+          padding: "6px 12px",
+          borderRadius: 4,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          cursor: "pointer",
+        }}
+        onClick={async () => {
+          await fetch("/api/usage/sync", { method: "POST" });
+          window.location.reload();
+        }}
+      >
+        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 3v3h-3" />
+        </svg>
+        sync now
+      </button>
     </div>
   );
 }
@@ -382,7 +337,7 @@ function Divider() {
   return <div style={{ width: 1, height: 14, background: "var(--border)" }} />;
 }
 
-/* ── HeroPanel ── */
+/* ΓöÇΓöÇ HeroPanel ΓöÇΓöÇ */
 function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { totalCost: number; inputTokens: number; outputTokens: number; trendDelta?: number | null }) {
   return (
     <Card style={{ padding: 0, overflow: "hidden" }}>
@@ -394,7 +349,7 @@ function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { total
               className="mono"
               style={{ fontSize: 10.5, color: "var(--fg-mute)", letterSpacing: "0.18em", textTransform: "uppercase" }}
             >
-              月度总消耗 · Month-To-Date Burn
+              µ£êσ║ªµÇ╗µ╢êΦÇù ┬╖ Month-To-Date Burn
             </span>
             <Badge tone="amber">USD</Badge>
           </div>
@@ -419,13 +374,13 @@ function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { total
                   <span className="mono tabular" style={{ fontSize: 12, color: trendDelta >= 0 ? "var(--red)" : "var(--green)" }}>
                     {trendDelta > 0 ? "+" : ""}{trendDelta.toFixed(1)}%
                   </span>
-                  <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>趋势</span>
+                  <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>Φ╢ïσè┐</span>
                 </div>
                 <Divider />
               </>
             )}
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>日均</span>
+              <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>µùÑσ¥ç</span>
               <span className="mono tabular" style={{ fontSize: 12, color: "var(--fg)" }}>
                 ${totalCost > 0 ? (totalCost / new Date().getDate()).toFixed(2) : "0.00"}
               </span>
@@ -441,8 +396,8 @@ function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { total
         </div>
 
         <div style={{ display: "grid", gridTemplateRows: "1fr 1fr" }}>
-          <SubStat label="TOTAL TOKENS · IN" value={inputTokens > 0 ? (inputTokens / 1e6).toFixed(2) + "M" : "0"} />
-          <SubStat label="TOTAL TOKENS · OUT" value={outputTokens > 0 ? (outputTokens / 1e6).toFixed(2) + "M" : "0"} sep />
+          <SubStat label="TOTAL TOKENS ┬╖ IN" value={inputTokens > 0 ? (inputTokens / 1e6).toFixed(2) + "M" : "0"} />
+          <SubStat label="TOTAL TOKENS ┬╖ OUT" value={outputTokens > 0 ? (outputTokens / 1e6).toFixed(2) + "M" : "0"} sep />
         </div>
       </div>
     </Card>
@@ -485,19 +440,19 @@ function BurnPulseBar() {
   );
 }
 
-/* ── BudgetPanel ── */
+/* ΓöÇΓöÇ BudgetPanel ΓöÇΓöÇ */
 function BudgetPanel({ used, limit, warn, alert }: { used: number; limit: number; warn: number; alert: number }) {
   const ratio = limit > 0 ? used / limit : 0;
   return (
     <Card>
       <CardHeader>
-        <CardLabel badge={<Badge tone="amber">{Math.round(ratio * 100)}% USED</Badge>}>预算 / Monthly budget</CardLabel>
+        <CardLabel badge={<Badge tone="amber">{Math.round(ratio * 100)}% USED</Badge>}>Θóäτ«ù / Monthly budget</CardLabel>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <span className="mono" style={{ fontSize: 10.5, color: "var(--fg-mute)" }}>
-            <span style={{ color: "var(--amber)" }}>●</span> warn {warn}%
+            <span style={{ color: "var(--amber)" }}>ΓùÅ</span> warn {warn}%
           </span>
           <span className="mono" style={{ fontSize: 10.5, color: "var(--fg-mute)" }}>
-            <span style={{ color: "var(--red)" }}>●</span> alert {alert}%
+            <span style={{ color: "var(--red)" }}>ΓùÅ</span> alert {alert}%
           </span>
         </div>
       </CardHeader>
@@ -510,7 +465,7 @@ function BudgetPanel({ used, limit, warn, alert }: { used: number; limit: number
             <span className="mono" style={{ fontSize: 14, color: "var(--fg-faint)" }}>/ {fmtUSD(limit)}</span>
           </div>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
-            <span className="mono" style={{ fontSize: 10.5, color: "var(--fg-mute)", letterSpacing: "0.14em", textTransform: "uppercase" }}>剩余</span>
+            <span className="mono" style={{ fontSize: 10.5, color: "var(--fg-mute)", letterSpacing: "0.14em", textTransform: "uppercase" }}>σë⌐Σ╜Ö</span>
             <span className="mono tabular" style={{ fontSize: 14, color: "var(--fg-dim)" }}>{fmtUSD(Math.max(0, limit - used))}</span>
           </div>
         </div>
@@ -519,8 +474,8 @@ function BudgetPanel({ used, limit, warn, alert }: { used: number; limit: number
 
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 10 }} className="mono">
           <span style={{ fontSize: 10, color: "var(--fg-faint)", letterSpacing: "0.12em" }}>$0</span>
-          <span style={{ fontSize: 10, color: "var(--amber)", letterSpacing: "0.12em" }}>WARN · ${(limit * (warn / 100)).toFixed(0)}</span>
-          <span style={{ fontSize: 10, color: "var(--red)", letterSpacing: "0.12em" }}>ALERT · ${(limit * (alert / 100)).toFixed(0)}</span>
+          <span style={{ fontSize: 10, color: "var(--amber)", letterSpacing: "0.12em" }}>WARN ┬╖ ${(limit * (warn / 100)).toFixed(0)}</span>
+          <span style={{ fontSize: 10, color: "var(--red)", letterSpacing: "0.12em" }}>ALERT ┬╖ ${(limit * (alert / 100)).toFixed(0)}</span>
           <span style={{ fontSize: 10, color: "var(--fg-faint)", letterSpacing: "0.12em" }}>{fmtUSD(limit)}</span>
         </div>
       </div>
@@ -528,7 +483,7 @@ function BudgetPanel({ used, limit, warn, alert }: { used: number; limit: number
   );
 }
 
-/* ── ProviderCard ── */
+/* ΓöÇΓöÇ ProviderCard ΓöÇΓöÇ */
 function ProviderCard({ name, code, spend, status }: { name: string; code: string; spend: number; status: string }) {
   const empty = spend === 0;
   return (
@@ -544,8 +499,8 @@ function ProviderCard({ name, code, spend, status }: { name: string; code: strin
               <span className="mono" style={{ fontSize: 10, color: "var(--fg-mute)", letterSpacing: "0.08em", marginTop: 3 }}>{code}</span>
             </div>
           </div>
-          {status === "online" && <Badge tone="green">● ONLINE</Badge>}
-          {status === "idle" && <Badge tone="neutral">● IDLE</Badge>}
+          {status === "online" && <Badge tone="green">ΓùÅ ONLINE</Badge>}
+          {status === "idle" && <Badge tone="neutral">ΓùÅ IDLE</Badge>}
           {status === "unlinked" && <Badge tone="ghost">UNLINKED</Badge>}
         </div>
 
@@ -580,7 +535,7 @@ function ProviderCard({ name, code, spend, status }: { name: string; code: strin
               cursor: "pointer",
             }}
           >
-            + 绑定 API key
+            + τ╗æσ«Ü API key
           </button>
         )}
       </div>
@@ -593,7 +548,7 @@ function NoProviderCard() {
     <Card style={{ padding: "30px 18px", gridColumn: "1 / -1", textAlign: "center" }}>
       <span className="mono" style={{ fontSize: 12, color: "var(--fg-mute)" }}>NO PROVIDERS CONFIGURED</span>
       <p style={{ fontSize: 13, color: "var(--fg-dim)", marginTop: 8 }}>
-        前往 <a href="/settings" style={{ color: "var(--amber)", textDecoration: "none" }}>设置</a> 添加 Provider
+        σëìσ╛Ç <a href="/settings" style={{ color: "var(--amber)", textDecoration: "none" }}>Φ«╛τ╜«</a> µ╖╗σèá Provider
       </p>
     </Card>
   );
@@ -632,12 +587,12 @@ function ProviderLogo({ which }: { which: string }) {
   return <>{map[which] ?? map["openrouter"]}</>;
 }
 
-/* ── ActivityFeed ── */
+/* ΓöÇΓöÇ ActivityFeed ΓöÇΓöÇ */
 function ActivityFeed() {
   return (
     <Card style={{ display: "flex", flexDirection: "column" }}>
       <CardHeader>
-        <CardLabel badge={<Badge tone="green">LIVE</Badge>}>活动日志 / Activity</CardLabel>
+        <CardLabel badge={<Badge tone="green">LIVE</Badge>}>µ┤╗σè¿µùÑσ┐ù / Activity</CardLabel>
         <span className="mono" style={{ fontSize: 10.5, color: "var(--fg-mute)" }}>last 6h</span>
       </CardHeader>
       <div style={{ padding: "8px 0" }}>
@@ -667,7 +622,7 @@ function ActivityFeed() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 2 }}>
                 <span className="mono" style={{ fontSize: 10, color: a.tone === "amber" ? "var(--amber)" : "var(--green)", letterSpacing: "0.1em", fontWeight: 500 }}>{a.code}</span>
-                <span className="mono" style={{ fontSize: 10, color: "var(--fg-faint)" }}>−{a.t}</span>
+                <span className="mono" style={{ fontSize: 10, color: "var(--fg-faint)" }}>ΓêÆ{a.t}</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--fg-dim)" }}>{a.msg}</div>
             </div>
@@ -678,7 +633,7 @@ function ActivityFeed() {
   );
 }
 
-/* ── small bits ── */
+/* ΓöÇΓöÇ small bits ΓöÇΓöÇ */
 function LegendDot({ color, dashed, label }: { color: string; dashed?: boolean; label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -709,7 +664,7 @@ function RangePill({ label, active }: { label: string; active?: boolean }) {
   );
 }
 
-/* ── Guest banner ── */
+/* ΓöÇΓöÇ Guest banner ΓöÇΓöÇ */
 function GuestBanner() {
   return (
     <div
@@ -725,7 +680,7 @@ function GuestBanner() {
       }}
       className="mono"
     >
-      <span style={{ color: "var(--fg-mute)" }}>PREVIEW MODE · 游客预览</span>
+      <span style={{ color: "var(--fg-mute)" }}>PREVIEW MODE ┬╖ µ╕╕σ«óΘóäΦºê</span>
       <a
         href="/login"
         style={{
@@ -735,9 +690,9 @@ function GuestBanner() {
           letterSpacing: "0.1em",
         }}
       >
-        登录 / SIGN IN
+        τÖ╗σ╜ò / SIGN IN
       </a>
-      <span style={{ color: "var(--fg-faint)" }}>·</span>
+      <span style={{ color: "var(--fg-faint)" }}>┬╖</span>
       <a
         href="/apply"
         style={{
@@ -746,7 +701,7 @@ function GuestBanner() {
           letterSpacing: "0.08em",
         }}
       >
-        申请访问
+        τö│Φ»╖Φ«┐Θù«
       </a>
     </div>
   );
