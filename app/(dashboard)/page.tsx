@@ -128,7 +128,7 @@ export default function DashboardPage() {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, position: "relative", zIndex: 1 }}>
       {isGuest && <GuestBanner />}
-      <StatusBar />
+      <StatusBar isGuest={isGuest} />
       <div
         style={{
           padding: "24px 28px",
@@ -246,7 +246,7 @@ export default function DashboardPage() {
 }
 
 /* ── StatusBar ── */
-function StatusBar() {
+function StatusBar({ isGuest }: { isGuest: boolean }) {
   return (
     <div
       style={{
@@ -303,32 +303,77 @@ function StatusBar() {
       </div>
       <div style={{ flex: 1 }} />
 
-      <button
-        className="mono"
-        style={{
-          background: "transparent",
-          border: "1px solid var(--border-strong)",
-          color: "var(--fg-dim)",
-          fontSize: 10.5,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          padding: "6px 12px",
-          borderRadius: 4,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          cursor: "pointer",
-        }}
-        onClick={async () => {
-          await fetch("/api/usage/sync", { method: "POST" });
-          window.location.reload();
-        }}
-      >
-        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 3v3h-3" />
-        </svg>
-        sync now
-      </button>
+      {isGuest ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <a
+            href="/login"
+            className="mono"
+            style={{
+              background: "var(--amber-dim)",
+              border: "1px solid var(--amber-line)",
+              color: "var(--amber)",
+              fontSize: 10.5,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "6px 14px",
+              borderRadius: 4,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            sign in
+          </a>
+          <a
+            href="/apply"
+            className="mono"
+            style={{
+              background: "transparent",
+              border: "1px solid var(--border-strong)",
+              color: "var(--fg-dim)",
+              fontSize: 10.5,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "6px 14px",
+              borderRadius: 4,
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            apply
+          </a>
+        </div>
+      ) : (
+        <button
+          className="mono"
+          style={{
+            background: "transparent",
+            border: "1px solid var(--border-strong)",
+            color: "var(--fg-dim)",
+            fontSize: 10.5,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "6px 12px",
+            borderRadius: 4,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            cursor: "pointer",
+          }}
+          onClick={async () => {
+            await fetch("/api/usage/sync", { method: "POST" });
+            window.location.reload();
+          }}
+        >
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 3v3h-3" />
+          </svg>
+          sync now
+        </button>
+      )}
     </div>
   );
 }
