@@ -55,12 +55,16 @@ export async function POST(request: NextRequest) {
   }
 
   // Find existing anthropic provider for this user (Claude Code = Anthropic model)
-  const { data: existing } = await supabase
+  const { data: existing, error: selectErr } = await supabase
     .from("providers")
     .select("id")
     .eq("user_id", user.id)
     .eq("name", "anthropic")
     .maybeSingle();
+
+  if (selectErr) {
+    return NextResponse.json({ error: "Provider query failed", detail: selectErr.message }, { status: 500 });
+  }
 
   let providerId: string;
   if (existing) {
@@ -79,7 +83,7 @@ export async function POST(request: NextRequest) {
       .select("id")
       .single();
     if (createErr || !created) {
-      return NextResponse.json({ error: "Failed to create provider" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to create provider", detail: createErr?.message }, { status: 500 });
     }
     providerId = created.id;
   }
