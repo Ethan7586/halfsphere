@@ -9,76 +9,68 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
       style={{ display: "block", flexShrink: 0 }}
     >
       <defs>
+        <clipPath id="circleClip">
+          <circle cx="18" cy="18" r="15.5" />
+        </clipPath>
         <linearGradient id="hemiFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFC758" />
-          <stop offset="55%" stopColor="#FFB020" />
-          <stop offset="100%" stopColor="#C97F0E" />
+          <stop offset="0%" stopColor="#FFB020" />
+          <stop offset="55%" stopColor="#E8900A" />
+          <stop offset="100%" stopColor="#A05C00" />
         </linearGradient>
-        <radialGradient id="hemiHi" cx="42%" cy="35%" r="40%">
-          <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
+        <radialGradient id="hemiHi" cx="42%" cy="35%" r="50%">
+          <stop offset="0%" stopColor="rgba(255,255,255,0.6)" />
           <stop offset="100%" stopColor="rgba(255,255,255,0)" />
         </radialGradient>
-        <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#0d1b3e" />
-          <stop offset="50%" stopColor="#0a0e27" />
-          <stop offset="100%" stopColor="#050714" />
-        </linearGradient>
       </defs>
 
-      {/* sphere outline */}
-      <circle cx="18" cy="18" r="16" fill="none" stroke="var(--border-strong)" strokeWidth="1" />
+      <g clipPath="url(#circleClip)">
+        <circle cx="18" cy="18" r="16" fill="url(#hemiFill)" />
+        <circle cx="18" cy="18" r="16" fill="url(#hemiHi)" />
+        <ellipse cx="18" cy="18" rx="16" ry="5" fill="none" stroke="rgba(0,0,0,0.35)" strokeWidth="1.5" />
+        <path d="M 18 2 A 8 16 0 0 1 18 34" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" />
+        <path d="M 18 2 A 8 16 0 0 0 18 34" fill="none" stroke="rgba(0,0,0,0.25)" strokeWidth="1.5" />
+        {/* 背景密集矮房 20栋 */}
+        <g fill="#0d1124" opacity="0.8">
+          <rect x="2"  y="22" width="1.2" height="12" />
+          <rect x="3.5" y="21" width="1.2" height="12" />
+          <rect x="5"  y="22" width="1.2" height="12" />
+          <rect x="6.5" y="21" width="1.2" height="12" />
+          <rect x="8"  y="22" width="1.2" height="12" />
+          <rect x="9.5" y="21" width="1.2" height="12" />
+          <rect x="11" y="22" width="1.2" height="12" />
+          <rect x="12.5" y="21" width="1.2" height="12" />
+          <rect x="14" y="22" width="1.2" height="12" />
+          <rect x="15.5" y="21" width="1.2" height="12" />
+          <rect x="19" y="21" width="1.2" height="12" />
+          <rect x="20.5" y="22" width="1.2" height="12" />
+          <rect x="22" y="21" width="1.2" height="12" />
+          <rect x="23.5" y="22" width="1.2" height="12" />
+          <rect x="25" y="21" width="1.2" height="12" />
+          <rect x="26.5" y="22" width="1.2" height="12" />
+          <rect x="28" y="21" width="1.2" height="12" />
+          <rect x="29.5" y="22" width="1.2" height="12" />
+          <rect x="31" y="21" width="1.2" height="12" />
+          <rect x="32.5" y="22" width="1.2" height="12" />
+        </g>
 
-      {/* ── bottom half drawn FIRST so top hemisphere covers any overflow ── */}
-      <path d="M 2 18 A 16 16 0 0 0 34 18 Z" fill="url(#nightSky)" />
-
-      {/* building silhouettes — shifted up 2 units, heights extended to keep base at y=28 */}
-      <g fill="#080c1f" stroke="none">
-        <rect x="3"    y="20" width="3"   height="8"  />
-        <rect x="7"    y="16" width="2.5" height="12" />
-        <rect x="10.5" y="18" width="2"   height="10" />
-        <rect x="13.5" y="15" width="3"   height="13" />
-        <rect x="17.5" y="17" width="2.5" height="11" />
-        <rect x="20.5" y="19" width="2"   height="9"  />
-        <rect x="23"   y="16" width="2.5" height="12" />
-        <rect x="26"   y="20" width="3"   height="8"  />
-        <rect x="29.5" y="18" width="2.5" height="10" />
+        <g fill="#0d1124">
+          {/* 左侧3栋 */}
+          <rect x="3"  y="20" width="3" height="14" />
+          <rect x="7"  y="19" width="3" height="14" />
+          <rect x="11" y="21" width="3" height="14" />
+          {/* 东方明珠 — 偏右 */}
+          <rect x="20.5" y="11" width="1" height="6" />
+          <circle cx="21" cy="17" r="2.2" />
+          <circle cx="21" cy="22" r="1.4" />
+          <polygon points="21,23 17,34 25,34" />
+          {/* 右侧3栋 */}
+          <rect x="15" y="21" width="3" height="14" />
+          <rect x="26" y="19" width="3" height="14" />
+          <rect x="30" y="20" width="3" height="14" />
+        </g>
       </g>
 
-      {/* window lights — shifted up 2 units */}
-      <g fill="#FFB020" opacity="0.7">
-        <circle cx="8"    cy="18" r="0.5" />
-        <circle cx="8.5"  cy="21" r="0.4" />
-        <circle cx="11.5" cy="20" r="0.5" />
-        <circle cx="14.5" cy="17" r="0.5" />
-        <circle cx="15"   cy="19" r="0.4" />
-        <circle cx="15.5" cy="22" r="0.5" />
-        <circle cx="18.5" cy="20" r="0.5" />
-        <circle cx="19"   cy="23" r="0.4" />
-        <circle cx="21.5" cy="21" r="0.5" />
-        <circle cx="24"   cy="19" r="0.5" />
-        <circle cx="24.5" cy="22" r="0.4" />
-        <circle cx="30"   cy="20" r="0.5" />
-      </g>
-
-      {/* ── top hemisphere drawn AFTER — naturally covers building overflow ── */}
-      <path d="M 2 18 A 16 16 0 0 1 34 18 Z" fill="url(#hemiFill)" />
-      <path d="M 2 18 A 16 16 0 0 1 34 18 Z" fill="url(#hemiHi)" />
-
-      {/* longitude arcs */}
-      <path d="M 2 18 A 16 8 0 0 1 34 18" fill="none" stroke="#0A0A0B" strokeWidth="0.9" opacity="0.55" />
-      <path d="M 18 2 A 8 16 0 0 1 18 34" fill="none" stroke="var(--bg)" strokeWidth="0.9" opacity="0.4" />
-      <path d="M 18 2 A 8 16 0 0 0 18 34" fill="none" stroke="var(--bg)" strokeWidth="0.9" opacity="0.4" />
-
-      {/* equator line */}
-      <line x1="2" y1="18" x2="34" y2="18" stroke="var(--bg)" strokeWidth="1" />
-
-      {/* cardinal ticks */}
-      <line x1="2"  y1="18" x2="5"  y2="18" stroke="var(--amber)" strokeWidth="1.4" />
-      <line x1="31" y1="18" x2="34" y2="18" stroke="var(--amber)" strokeWidth="1.4" />
-
-      {/* center bullseye */}
-      <circle cx="18" cy="18" r="2.2" fill="var(--bg)" />
-      <circle cx="18" cy="18" r="0.9" fill="var(--amber)" />
+      <circle cx="18" cy="18" r="16" fill="none" stroke="#555" strokeWidth="2" />
     </svg>
   );
 }
