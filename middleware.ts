@@ -109,7 +109,7 @@ export async function middleware(request: NextRequest) {
   }
 
   /* ── Guest visiting / → redirect to /guest ── */
-  if (pathname === "/" && (error || !user)) {
+  if (pathname === "/" && !user) {
     return NextResponse.redirect(new URL("/guest", request.url));
   }
 
