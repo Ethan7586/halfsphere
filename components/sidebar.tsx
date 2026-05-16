@@ -6,8 +6,6 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { HemisphereMark } from "@/components/hemisphere-mark";
 import { Flame, Bot, Server, Settings, Wallet, Shield } from "lucide-react";
-import Link from "next/link";
-
 const navModules = [
   { label: "燃烧", code: "BURNING / 01", href: "/", icon: Flame, active: true },
   { label: "舰队", code: "FLEET / 02", href: "#", icon: Bot, locked: true },

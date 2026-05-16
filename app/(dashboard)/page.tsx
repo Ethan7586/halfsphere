@@ -13,6 +13,7 @@ import {
   CornerMarks,
 } from "@/components/primitives";
 import { TrendChart } from "@/components/trend-chart";
+import { BaseCard } from "./components/base-card";
 
 /* ── types ── */
 interface UsageData {
@@ -192,7 +193,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* row 3: trend + activity */}
+        {/* row 3: base + trend + activity */}
         <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 18 }}>
           <Card>
             <CardHeader>
@@ -206,7 +207,10 @@ export default function DashboardPage() {
               <TrendChart data={trendData} height={240} />
             </div>
           </Card>
-          <ActivityFeed />
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+            <BaseCard />
+            <ActivityFeed />
+          </div>
         </div>
 
         {/* footer */}

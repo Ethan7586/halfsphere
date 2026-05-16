@@ -25,18 +25,16 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const admin = createAdminClient();
 
   // 1. 获取申请信息
-  const { data: req, error: reqError } = await admin
+  const { data: rawReq, error: reqError } = await admin
     .from("registration_requests")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (reqError || !req) {
-    return NextResponse.json({ error: "申请不存在" }, { status: 404 });
-  }
+  const req = rawReq as { status: string; email: string; display_name: string } | null;
 
-  if (req.status !== "pending") {
-    return NextResponse.json({ error: "该申请已处理" }, { status: 409 });
+  if (reqError || !req || req.status !== "pending") {
+    return NextResponse.json({ error: "申请不存在或已处理" }, { status: 404 });
   }
 
   // 2. 生成随机密码
@@ -58,7 +56,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   // 4. 更新申请状态
   const { error: updateError } = await admin
     .from("registration_requests")
-    .update({ status: "approved", updated_at: new Date().toISOString() })
+    .update({ status: "approved", updated_at: new Date().toISOString() } as any)
     .eq("id", id);
 
   if (updateError) {

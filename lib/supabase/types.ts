@@ -155,6 +155,150 @@ export interface Database {
           }
         ];
       };
+      registration_requests: {
+        Row: {
+          id: string;
+          email: string;
+          display_name: string | null;
+          reason: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          display_name?: string | null;
+          reason?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
+          display_name?: string | null;
+          reason?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_tiers: {
+        Row: {
+          user_id: string;
+          tier: string;
+          upgraded_at: string;
+        };
+        Insert: {
+          user_id: string;
+          tier?: string;
+          upgraded_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          tier?: string;
+          upgraded_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_tiers_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      network_nodes: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          host_encrypted: string;
+          host_iv: string;
+          host_tag: string;
+          port: number;
+          protocol: string;
+          region: string | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          host_encrypted: string;
+          host_iv: string;
+          host_tag: string;
+          port?: number;
+          protocol?: string;
+          region?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          host_encrypted?: string;
+          host_iv?: string;
+          host_tag?: string;
+          port?: number;
+          protocol?: string;
+          region?: string | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_nodes_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      network_snapshots: {
+        Row: {
+          id: string;
+          node_id: string;
+          user_id: string;
+          latency_ms: number | null;
+          status: string;
+          checked_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          node_id: string;
+          user_id: string;
+          latency_ms?: number | null;
+          status?: string;
+          checked_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          node_id?: string;
+          user_id?: string;
+          latency_ms?: number | null;
+          status?: string;
+          checked_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "network_snapshots_node_id_fkey";
+            columns: ["node_id"];
+            referencedRelation: "network_nodes";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
