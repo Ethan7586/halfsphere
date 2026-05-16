@@ -7,9 +7,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { HemisphereMark } from "@/components/hemisphere-mark";
 import { Flame, Bot, Server, Settings, Wallet, Shield } from "lucide-react";
 const navModules = [
-  { label: "燃烧", code: "BURNING / 01", href: "/", icon: Flame, perm: null },       // 所有人可见
-  { label: "舰队", code: "FLEET / 02", href: "/fleet", icon: Bot, perm: "fleet" },     // 需 fleet 权限
-  { label: "基地", code: "BASE / 03", href: "/base", icon: Server, perm: "base" },     // 需 base 权限
+  { label: "燃烧", code: "BURNING / 01", href: "/dashboard", icon: Flame, perm: null }, // 所有人可见
+  { label: "舰队", code: "FLEET / 02", href: "/fleet", icon: Bot, perm: "fleet" },      // 需 fleet 权限
+  { label: "基地", code: "BASE / 03", href: "/base", icon: Server, perm: "base" },      // 需 base 权限
 ];
 
 const navControls = [
