@@ -48,7 +48,7 @@ export default function LoginPage() {
       <div style={{ width: "100%", maxWidth: 360, padding: "0 24px" }}>
         {/* logo */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 32, gap: 14 }}>
-          <HemisphereMark size={52} />
+          <HemisphereMark size={72} />
           <div style={{ textAlign: "center" }}>
             <h1
               style={{

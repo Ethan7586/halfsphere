@@ -108,6 +108,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  /* ── Guest visiting / → redirect to /guest ── */
+  if (pathname === "/" && (error || !user)) {
+    return NextResponse.redirect(new URL("/guest", request.url));
+  }
+
   /* ── Inject security headers ── */
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
     response.headers.set(key, value);
