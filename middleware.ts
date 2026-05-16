@@ -109,7 +109,8 @@ export async function middleware(request: NextRequest) {
   }
 
   /* ── Guest visiting / → redirect to /guest ── */
-  if (pathname === "/" && !user) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (pathname === "/" && !session) {
     return NextResponse.redirect(new URL("/guest", request.url));
   }
 
