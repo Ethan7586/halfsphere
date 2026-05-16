@@ -212,7 +212,9 @@ export function Sidebar() {
         />
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <HemisphereMark size={38} />
+          <div style={isGuest ? { filter: "grayscale(1) brightness(0.65)" } : undefined}>
+            <HemisphereMark size={38} />
+          </div>
           <div
             style={{
               display: "flex",
