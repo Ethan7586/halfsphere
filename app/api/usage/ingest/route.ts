@@ -54,12 +54,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `User not found: ${user_email}` }, { status: 404 });
   }
 
-  // Find or create the claude_code virtual provider
+  // Find existing anthropic provider for this user (Claude Code = Anthropic model)
   const { data: existing } = await supabase
     .from("providers")
     .select("id")
     .eq("user_id", user.id)
-    .eq("name", "claude_code")
+    .eq("name", "anthropic")
     .maybeSingle();
 
   let providerId: string;
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       .from("providers")
       .insert({
         user_id: user.id,
-        name: "claude_code",
+        name: "anthropic",
         display_name: "Claude Code",
         api_key_encrypted: "",
         api_key_iv: "",
