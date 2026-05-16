@@ -50,41 +50,36 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
       {/* building silhouettes */}
       <g fill="#080c1f" stroke="none">
         {/* left low-rise */}
-        <rect x="3" y="24" width="3" height="6" />
+        <rect x="3" y="22" width="3" height="6" />
         {/* mid left tower */}
-        <rect x="7" y="20" width="2.5" height="10" />
-        <polygon points="7,20 8.25,17 9.5,20" />
-        {/* bank of china style (triangular) */}
-        <rect x="10.5" y="22" width="2" height="8" />
-        <polygon points="10.5,22 11.5,18 12.5,22" />
+        <rect x="7" y="18" width="2.5" height="10" />
+        {/* bank of china style */}
+        <rect x="10.5" y="20" width="2" height="8" />
         {/* central tower */}
-        <rect x="13.5" y="19" width="3" height="11" />
-        <rect x="14.25" y="16" width="1.5" height="3" />
+        <rect x="13.5" y="17" width="3" height="11" />
         {/* right side cluster */}
-        <rect x="17.5" y="21" width="2.5" height="9" />
-        <polygon points="17.5,21 18.75,18 19,21" />
-        <rect x="20.5" y="23" width="2" height="7" />
-        <rect x="23" y="20" width="2.5" height="10" />
-        <polygon points="23,20 24.25,17 25.5,20" />
+        <rect x="17.5" y="19" width="2.5" height="9" />
+        <rect x="20.5" y="21" width="2" height="7" />
+        <rect x="23" y="18" width="2.5" height="10" />
         {/* far right */}
-        <rect x="26" y="24" width="3" height="6" />
-        <rect x="29.5" y="22" width="2.5" height="8" />
+        <rect x="26" y="22" width="3" height="6" />
+        <rect x="29.5" y="20" width="2.5" height="8" />
       </g>
 
       {/* window lights — warm amber dots */}
       <g fill="#FFB020" opacity="0.7">
-        <circle cx="8" cy="22" r="0.5" />
-        <circle cx="8.5" cy="25" r="0.4" />
-        <circle cx="11.5" cy="24" r="0.5" />
-        <circle cx="14.5" cy="21" r="0.5" />
-        <circle cx="15" cy="23" r="0.4" />
-        <circle cx="15.5" cy="26" r="0.5" />
-        <circle cx="18.5" cy="24" r="0.5" />
-        <circle cx="19" cy="27" r="0.4" />
-        <circle cx="21.5" cy="25" r="0.5" />
-        <circle cx="24" cy="23" r="0.5" />
-        <circle cx="24.5" cy="26" r="0.4" />
-        <circle cx="30" cy="24" r="0.5" />
+        <circle cx="8" cy="20" r="0.5" />
+        <circle cx="8.5" cy="23" r="0.4" />
+        <circle cx="11.5" cy="22" r="0.5" />
+        <circle cx="14.5" cy="19" r="0.5" />
+        <circle cx="15" cy="21" r="0.4" />
+        <circle cx="15.5" cy="24" r="0.5" />
+        <circle cx="18.5" cy="22" r="0.5" />
+        <circle cx="19" cy="25" r="0.4" />
+        <circle cx="21.5" cy="23" r="0.5" />
+        <circle cx="24" cy="21" r="0.5" />
+        <circle cx="24.5" cy="24" r="0.4" />
+        <circle cx="30" cy="22" r="0.5" />
       </g>
 
       {/* cardinal ticks */}
