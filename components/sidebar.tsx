@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { HemisphereMark } from "@/components/hemisphere-mark";
 import { Flame, Bot, Server, Settings, Wallet } from "lucide-react";
+import Link from "next/link";
 
 const navModules = [
   { label: "燃烧", code: "BURNING / 01", href: "/", icon: Flame, active: true },
@@ -155,7 +156,7 @@ function SystemClock() {
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { signOut } = useAuth();
+  const { user, tier, signOut } = useAuth();
 
   return (
     <aside
@@ -354,13 +355,13 @@ export function Sidebar() {
                 whiteSpace: "nowrap",
               }}
             >
-              ethan@halfsphere
+              {user?.email ?? "guest@halfsphere"}
             </div>
             <div
               className="mono"
-              style={{ fontSize: 9.5, color: "var(--fg-mute)" }}
+              style={{ fontSize: 9.5, color: tier === "pro" ? "var(--amber)" : "var(--fg-mute)" }}
             >
-              tier · pro
+              tier · {tier}
             </div>
           </div>
           <span

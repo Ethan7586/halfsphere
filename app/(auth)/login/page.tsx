@@ -178,7 +178,23 @@ export default function LoginPage() {
         <p
           className="mono"
           style={{
-            marginTop: 28,
+            marginTop: 20,
+            textAlign: "center",
+            fontSize: 11,
+            color: "var(--fg-mute)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          没有账号？{" "}
+          <a href="/apply" style={{ color: "var(--amber)", textDecoration: "none" }}>
+            申请访问
+          </a>
+        </p>
+
+        <p
+          className="mono"
+          style={{
+            marginTop: 16,
             textAlign: "center",
             fontSize: 9.5,
             color: "var(--fg-faint)",
