@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Wifi, WifiOff, AlertTriangle, Server } from "lucide-react";
@@ -41,7 +41,7 @@ export function BaseCard() {
     queryKey: ["network-health"],
     queryFn: async () => {
       const res = await fetch("/api/network/health");
-      if (!res.ok) throw new Error("ΦÄ╖σÅûσñ▒Φ┤Ñ");
+      if (!res.ok) throw new Error("获取失败");
       return res.json() as Promise<{ data: NodeHealth[] }>;
     },
     refetchInterval: 30000,
@@ -67,7 +67,7 @@ export function BaseCard() {
         </div>
         <div>
           <h3 className="text-sm font-semibold text-slate-200 tracking-wider">BASE STATUS</h3>
-          <p className="text-[10px] text-slate-500 font-mono">σƒ║σ£░Φèéτé╣τ¢æµÄº</p>
+          <p className="text-[10px] text-slate-500 font-mono">基地节点监控</p>
         </div>
         <Activity className="w-4 h-4 text-emerald-400 ml-auto animate-pulse" />
       </div>
@@ -79,7 +79,7 @@ export function BaseCard() {
           <Server className="w-8 h-8 text-slate-700 mx-auto mb-2" />
           <p className="text-xs text-slate-500 font-mono">NO NODES CONFIGURED</p>
           <p className="text-[10px] text-slate-600 mt-1">
-            Settings ΓåÆ σƒ║σ£░ µ╖╗σèáΦèéτé╣
+            Settings → 基地 添加节点
           </p>
         </div>
       ) : (
@@ -111,13 +111,13 @@ export function BaseCard() {
                 <div className="flex-1 min-w-0">
                   <div className="text-xs text-slate-300 truncate">{node.name}</div>
                   <div className="text-[10px] text-slate-600 font-mono">
-                    {node.protocol} ΓÇó {node.region || "ΓÇö"}
+                    {node.protocol} • {node.region || "—"}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-xs font-mono text-slate-400">
                     {node.health?.latency_ms == null
-                      ? "ΓÇö"
+                      ? "—"
                       : `${node.health.latency_ms}ms`}
                   </div>
                   <StatusBadge status={node.health?.status || "offline"} />
