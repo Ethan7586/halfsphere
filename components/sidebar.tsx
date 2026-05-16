@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { HemisphereMark } from "@/components/hemisphere-mark";
-import { Flame, Bot, Server, Settings, Wallet } from "lucide-react";
+import { Flame, Bot, Server, Settings, Wallet, Shield } from "lucide-react";
 import Link from "next/link";
 
 const navModules = [
@@ -17,6 +17,10 @@ const navModules = [
 const navControls = [
   { label: "预算", code: "BUDGET", href: "/budget", icon: Wallet },
   { label: "设置", code: "SETTINGS", href: "/settings", icon: Settings },
+];
+
+const navAdmin = [
+  { label: "审核", code: "ADMIN", href: "/admin/applications", icon: Shield, adminOnly: true },
 ];
 
 function DividerV() {
@@ -428,6 +432,33 @@ export function Sidebar() {
           active={pathname === item.href}
         />
       ))}
+
+      {/* admin nav — only for ethan7586@gsyen.com */}
+      {user?.email === "ethan7586@gsyen.com" && (
+        <>
+          <div
+            style={{
+              margin: "16px 16px 8px",
+              fontSize: 9.5,
+              color: "var(--fg-faint)",
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+            }}
+          >
+            Admin
+          </div>
+          {navAdmin.map((item) => (
+            <NavItem
+              key={item.label}
+              icon={item.icon}
+              label={item.label}
+              code={item.code}
+              href={item.href}
+              active={pathname === item.href}
+            />
+          ))}
+        </>
+      )}
 
       <div style={{ flex: 1 }} />
 

@@ -68,7 +68,7 @@ export async function middleware(request: NextRequest) {
   }
 
   /* ── Auth check for protected routes ── */
-  const protectedPrefixes = ["/", "/settings", "/budget"];
+  const protectedPrefixes = ["/", "/settings", "/budget", "/admin"];
   const isProtected = protectedPrefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`)
   );
