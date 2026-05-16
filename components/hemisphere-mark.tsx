@@ -9,7 +9,6 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
       style={{ display: "block", flexShrink: 0 }}
     >
       <defs>
-        {/* top hemisphere gold */}
         <linearGradient id="hemiFill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#FFC758" />
           <stop offset="55%" stopColor="#FFB020" />
@@ -19,8 +18,6 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
           <stop offset="0%" stopColor="rgba(255,255,255,0.55)" />
           <stop offset="100%" stopColor="rgba(255,255,255,0)" />
         </radialGradient>
-
-        {/* night sky gradient for bottom half */}
         <linearGradient id="nightSky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#0d1b3e" />
           <stop offset="50%" stopColor="#0a0e27" />
@@ -31,7 +28,39 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
       {/* sphere outline */}
       <circle cx="18" cy="18" r="16" fill="none" stroke="var(--border-strong)" strokeWidth="1" />
 
-      {/* ── top hemisphere (unchanged) ── */}
+      {/* ── bottom half drawn FIRST so top hemisphere covers any overflow ── */}
+      <path d="M 2 18 A 16 16 0 0 0 34 18 Z" fill="url(#nightSky)" />
+
+      {/* building silhouettes — shifted up 2 units, heights extended to keep base at y=28 */}
+      <g fill="#080c1f" stroke="none">
+        <rect x="3"    y="20" width="3"   height="8"  />
+        <rect x="7"    y="16" width="2.5" height="12" />
+        <rect x="10.5" y="18" width="2"   height="10" />
+        <rect x="13.5" y="15" width="3"   height="13" />
+        <rect x="17.5" y="17" width="2.5" height="11" />
+        <rect x="20.5" y="19" width="2"   height="9"  />
+        <rect x="23"   y="16" width="2.5" height="12" />
+        <rect x="26"   y="20" width="3"   height="8"  />
+        <rect x="29.5" y="18" width="2.5" height="10" />
+      </g>
+
+      {/* window lights — shifted up 2 units */}
+      <g fill="#FFB020" opacity="0.7">
+        <circle cx="8"    cy="18" r="0.5" />
+        <circle cx="8.5"  cy="21" r="0.4" />
+        <circle cx="11.5" cy="20" r="0.5" />
+        <circle cx="14.5" cy="17" r="0.5" />
+        <circle cx="15"   cy="19" r="0.4" />
+        <circle cx="15.5" cy="22" r="0.5" />
+        <circle cx="18.5" cy="20" r="0.5" />
+        <circle cx="19"   cy="23" r="0.4" />
+        <circle cx="21.5" cy="21" r="0.5" />
+        <circle cx="24"   cy="19" r="0.5" />
+        <circle cx="24.5" cy="22" r="0.4" />
+        <circle cx="30"   cy="20" r="0.5" />
+      </g>
+
+      {/* ── top hemisphere drawn AFTER — naturally covers building overflow ── */}
       <path d="M 2 18 A 16 16 0 0 1 34 18 Z" fill="url(#hemiFill)" />
       <path d="M 2 18 A 16 16 0 0 1 34 18 Z" fill="url(#hemiHi)" />
 
@@ -43,47 +72,8 @@ export function HemisphereMark({ size = 36 }: { size?: number }) {
       {/* equator line */}
       <line x1="2" y1="18" x2="34" y2="18" stroke="var(--bg)" strokeWidth="1" />
 
-      {/* ── bottom half: Hong Kong night skyline ── */}
-      {/* night sky base */}
-      <path d="M 2 18 A 16 16 0 0 0 34 18 Z" fill="url(#nightSky)" />
-
-      {/* building silhouettes */}
-      <g fill="#080c1f" stroke="none">
-        {/* left low-rise */}
-        <rect x="3" y="22" width="3" height="6" />
-        {/* mid left tower */}
-        <rect x="7" y="18" width="2.5" height="10" />
-        {/* bank of china style */}
-        <rect x="10.5" y="20" width="2" height="8" />
-        {/* central tower */}
-        <rect x="13.5" y="17" width="3" height="11" />
-        {/* right side cluster */}
-        <rect x="17.5" y="19" width="2.5" height="9" />
-        <rect x="20.5" y="21" width="2" height="7" />
-        <rect x="23" y="18" width="2.5" height="10" />
-        {/* far right */}
-        <rect x="26" y="22" width="3" height="6" />
-        <rect x="29.5" y="20" width="2.5" height="8" />
-      </g>
-
-      {/* window lights — warm amber dots */}
-      <g fill="#FFB020" opacity="0.7">
-        <circle cx="8" cy="20" r="0.5" />
-        <circle cx="8.5" cy="23" r="0.4" />
-        <circle cx="11.5" cy="22" r="0.5" />
-        <circle cx="14.5" cy="19" r="0.5" />
-        <circle cx="15" cy="21" r="0.4" />
-        <circle cx="15.5" cy="24" r="0.5" />
-        <circle cx="18.5" cy="22" r="0.5" />
-        <circle cx="19" cy="25" r="0.4" />
-        <circle cx="21.5" cy="23" r="0.5" />
-        <circle cx="24" cy="21" r="0.5" />
-        <circle cx="24.5" cy="24" r="0.4" />
-        <circle cx="30" cy="22" r="0.5" />
-      </g>
-
       {/* cardinal ticks */}
-      <line x1="2" y1="18" x2="5" y2="18" stroke="var(--amber)" strokeWidth="1.4" />
+      <line x1="2"  y1="18" x2="5"  y2="18" stroke="var(--amber)" strokeWidth="1.4" />
       <line x1="31" y1="18" x2="34" y2="18" stroke="var(--amber)" strokeWidth="1.4" />
 
       {/* center bullseye */}
