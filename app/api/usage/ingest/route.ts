@@ -1,0 +1,117 @@
+/**
+ * POST /api/usage/ingest
+ * Receives Claude Code local usage pushed by scripts/sync-claude-code.mjs
+ * Auth: x-sync-secret header must match CRON_SECRET env var
+ */
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import { ANTHROPIC_PRICING } from "@/lib/providers/pricing";
+
+interface IngestEntry {
+  date: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+}
+
+interface IngestPayload {
+  user_email: string;
+  entries: IngestEntry[];
+}
+
+export async function POST(request: NextRequest) {
+  const secret = request.headers.get("x-sync-secret");
+  if (!secret || secret !== process.env.CRON_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: IngestPayload;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { user_email, entries } = body;
+  if (!user_email || !Array.isArray(entries) || entries.length === 0) {
+    return NextResponse.json({ error: "Missing user_email or entries" }, { status: 400 });
+  }
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Find user by email
+  const { data: { users }, error: userError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  if (userError) {
+    return NextResponse.json({ error: "Failed to query users" }, { status: 500 });
+  }
+  const user = users.find((u) => u.email === user_email);
+  if (!user) {
+    return NextResponse.json({ error: `User not found: ${user_email}` }, { status: 404 });
+  }
+
+  // Find or create the claude_code virtual provider
+  const { data: existing } = await supabase
+    .from("providers")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("name", "claude_code")
+    .maybeSingle();
+
+  let providerId: string;
+  if (existing) {
+    providerId = existing.id;
+  } else {
+    const { data: created, error: createErr } = await supabase
+      .from("providers")
+      .insert({
+        user_id: user.id,
+        name: "claude_code",
+        display_name: "Claude Code",
+        api_key_encrypted: "",
+        api_key_iv: "",
+        api_key_tag: "",
+      })
+      .select("id")
+      .single();
+    if (createErr || !created) {
+      return NextResponse.json({ error: "Failed to create provider" }, { status: 500 });
+    }
+    providerId = created.id;
+  }
+
+  // Upsert daily aggregates
+  let upserted = 0;
+  for (const entry of entries) {
+    const pricing = ANTHROPIC_PRICING[entry.model];
+    const cost_usd = pricing
+      ? (entry.input_tokens * pricing.input + entry.output_tokens * pricing.output) / 1_000_000
+      : 0;
+
+    const { error } = await supabase.from("usage_snapshots").upsert(
+      {
+        user_id: user.id,
+        provider_id: providerId,
+        date: entry.date,
+        model: entry.model,
+        input_tokens: entry.input_tokens,
+        output_tokens: entry.output_tokens,
+        cost_usd,
+        raw_data: {
+          cache_creation_input_tokens: entry.cache_creation_input_tokens ?? 0,
+          cache_read_input_tokens: entry.cache_read_input_tokens ?? 0,
+          source: "claude_code",
+        },
+        synced_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id, provider_id, date, model" }
+    );
+    if (!error) upserted++;
+  }
+
+  return NextResponse.json({ success: true, upserted, total: entries.length });
+}
