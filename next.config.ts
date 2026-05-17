@@ -6,10 +6,15 @@ const nextConfig: NextConfig = {
   async headers() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
     const supabaseHost = supabaseUrl ? new URL(supabaseUrl).host : "";
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL ?? "";
+
+    const connectSrcParts = ["'self'", supabaseUrl, "https://*.supabase.co", "https://*.run.app"];
+    if (backendUrl) connectSrcParts.push(backendUrl);
+    const connectSrc = `connect-src ${connectSrcParts.filter(Boolean).join(" ")}`;
 
     const csp = [
       "default-src 'self'",
-      `connect-src 'self' ${supabaseUrl} https://*.supabase.co`,
+      connectSrc,
       `script-src 'self' 'unsafe-inline' 'unsafe-eval'`,
       `style-src 'self' 'unsafe-inline'`,
       `img-src 'self' data: blob:`,
