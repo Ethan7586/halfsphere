@@ -172,7 +172,7 @@ export default function DashboardPage() {
 
         {/* row 1: hero + budget */}
         <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 18 }}>
-          <HeroPanel totalCost={totalCost} inputTokens={usage?.summary.total_input_tokens ?? 0} outputTokens={usage?.summary.total_output_tokens ?? 0} trendDelta={trendDelta} />
+          <HeroPanel totalCost={totalCost} inputTokens={usage?.summary.total_input_tokens ?? 0} outputTokens={usage?.summary.total_output_tokens ?? 0} trendDelta={trendDelta} days={trendData.length} />
           <BudgetPanel used={used} limit={limit} warn={budgetCfg?.warn_threshold ?? 80} alert={budgetCfg?.alert_threshold ?? 95} />
         </div>
 
@@ -382,7 +382,7 @@ function Divider() {
 }
 
 /* ── HeroPanel ── */
-function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { totalCost: number; inputTokens: number; outputTokens: number; trendDelta?: number | null }) {
+function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta, days }: { totalCost: number; inputTokens: number; outputTokens: number; trendDelta?: number | null; days: number }) {
   return (
     <Card style={{ padding: 0, overflow: "hidden" }}>
       <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", minHeight: 220 }}>
@@ -426,7 +426,7 @@ function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { total
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>日均</span>
               <span className="mono tabular" style={{ fontSize: 12, color: "var(--fg)" }}>
-                ${totalCost > 0 && trendData.length > 0 ? (totalCost / trendData.length).toFixed(2) : "0.00"}
+                ${totalCost > 0 && days > 0 ? (totalCost / days).toFixed(2) : "0.00"}
               </span>
             </div>
           </div>
