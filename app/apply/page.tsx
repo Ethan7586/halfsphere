@@ -17,7 +17,8 @@ export default function ApplyPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/apply`, {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://halfsphere-api-827638954474.us-central1.run.app";
+      const res = await fetch(`${apiBase}/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, display_name: displayName, reason }),
