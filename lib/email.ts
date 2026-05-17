@@ -2,8 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// 域名验证后改为 noreply@halfsphere.com
-const FROM = "Halfsphere <onboarding@resend.dev>";
+const FROM = "Halfsphere <noreply@halfsphere.com>";
 const LOGIN_URL = "https://halfsphere.com/login";
 
 const base = (content: string) => `
