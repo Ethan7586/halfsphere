@@ -21,9 +21,19 @@ interface IngestPayload {
   entries: IngestEntry[];
 }
 
+function timingSafeCompare(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let result = 0;
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return result === 0;
+}
+
 export async function POST(request: NextRequest) {
   const secret = request.headers.get("x-sync-secret");
-  if (!secret || secret !== process.env.CRON_SECRET) {
+  const expectedSecret = process.env.CRON_SECRET;
+  if (!secret || !expectedSecret || !timingSafeCompare(secret, expectedSecret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

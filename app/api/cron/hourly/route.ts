@@ -101,6 +101,7 @@ export async function GET(request: NextRequest) {
         const snapshots = await fetcher(apiKey, startDate, today);
 
         // 写入数据库（UPSERT）
+        const upsertErrors: string[] = [];
         for (const snapshot of snapshots) {
           const { error: upsertError } = await supabase
             .from("usage_snapshots")
@@ -122,19 +123,30 @@ export async function GET(request: NextRequest) {
             );
 
           if (upsertError) {
+            const err = `${snapshot.date} ${snapshot.model}`;
             console.error(
-              `Cron UPSERT 失败: ${provider.name} ${snapshot.date} ${snapshot.model}`,
+              `Cron UPSERT 失败: ${provider.name} ${err}`,
               upsertError
             );
+            upsertErrors.push(err);
           }
         }
 
-        results.push({
-          user_id: provider.user_id,
-          provider: provider.name,
-          status: "success",
-          count: snapshots.length,
-        });
+        if (upsertErrors.length > 0) {
+          results.push({
+            user_id: provider.user_id,
+            provider: provider.name,
+            status: "error",
+            error: `${upsertErrors.length}/${snapshots.length} upserts failed`,
+          });
+        } else {
+          results.push({
+            user_id: provider.user_id,
+            provider: provider.name,
+            status: "success",
+            count: snapshots.length,
+          });
+        }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(`Cron 同步 ${provider.name} 失败:`, errorMsg);

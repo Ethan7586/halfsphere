@@ -17,7 +17,7 @@ export default function ApplyPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/apply", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/apply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, display_name: displayName, reason }),

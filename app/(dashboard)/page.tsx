@@ -426,7 +426,7 @@ function HeroPanel({ totalCost, inputTokens, outputTokens, trendDelta }: { total
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span className="mono" style={{ fontSize: 11, color: "var(--fg-mute)" }}>日均</span>
               <span className="mono tabular" style={{ fontSize: 12, color: "var(--fg)" }}>
-                ${totalCost > 0 ? (totalCost / new Date().getDate()).toFixed(2) : "0.00"}
+                ${totalCost > 0 && trendData.length > 0 ? (totalCost / trendData.length).toFixed(2) : "0.00"}
               </span>
             </div>
           </div>

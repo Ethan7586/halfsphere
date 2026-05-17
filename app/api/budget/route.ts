@@ -104,45 +104,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 先查询是否已有记录
-    const { data: existing } = await supabase
+    // Upsert: 自动创建或更新
+    const result = await supabase
       .from("budgets")
-      .select("id")
+      .upsert({
+        user_id: user.id,
+        monthly_limit_usd,
+        warn_threshold,
+        alert_threshold,
+        email_alerts: !!email_alerts,
+        telegram_chat_id: telegram_chat_id || null,
+        updated_at: new Date().toISOString(),
+      })
       .eq("user_id", user.id)
-      .maybeSingle();
-
-    let result;
-    if (existing) {
-      // 更新
-      result = await supabase
-        .from("budgets")
-        .update({
-          monthly_limit_usd,
-          warn_threshold,
-          alert_threshold,
-          email_alerts: !!email_alerts,
-          telegram_chat_id: telegram_chat_id || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", existing.id)
-        .eq("user_id", user.id)
-        .select()
-        .single();
-    } else {
-      // 创建
-      result = await supabase
-        .from("budgets")
-        .insert({
-          user_id: user.id,
-          monthly_limit_usd,
-          warn_threshold,
-          alert_threshold,
-          email_alerts: !!email_alerts,
-          telegram_chat_id: telegram_chat_id || null,
-        })
-        .select()
-        .single();
-    }
+      .select()
+      .single();
 
     if (result.error) {
       console.error("保存 budget 失败:", result.error);

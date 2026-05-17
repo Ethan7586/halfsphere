@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
         const snapshots = await fetcher(apiKey, startDate, today);
 
         // 写入数据库（UPSERT）
+        const upsertErrors: string[] = [];
         for (const snapshot of snapshots) {
           const { error: upsertError } = await supabase
             .from("usage_snapshots")
@@ -100,18 +101,28 @@ export async function POST(request: NextRequest) {
             );
 
           if (upsertError) {
+            const err = `${snapshot.date} ${snapshot.model}`;
             console.error(
-              `UPSERT 失败: ${provider.name} ${snapshot.date} ${snapshot.model}`,
+              `UPSERT 失败: ${provider.name} ${err}`,
               upsertError
             );
+            upsertErrors.push(err);
           }
         }
 
-        results.push({
-          provider: provider.name,
-          status: "success",
-          count: snapshots.length,
-        });
+        if (upsertErrors.length > 0) {
+          results.push({
+            provider: provider.name,
+            status: "error",
+            error: `${upsertErrors.length}/${snapshots.length} upserts failed`,
+          });
+        } else {
+          results.push({
+            provider: provider.name,
+            status: "success",
+            count: snapshots.length,
+          });
+        }
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
         console.error(`同步 ${provider.name} 失败:`, errorMsg);
