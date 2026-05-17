@@ -37,8 +37,9 @@ CREATE POLICY "用户可以查看自己的申请"
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.user_tiers (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    tier TEXT NOT NULL DEFAULT 'free' CHECK (tier IN ('free', 'pro')),
-    upgraded_at TIMESTAMPTZ,
+    tier TEXT NOT NULL DEFAULT 'user' CHECK (tier IN ('guest', 'user', 'admin')),
+    permissions JSONB DEFAULT '[]',
+    granted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -52,24 +53,25 @@ CREATE POLICY "用户只能查看自己的等级"
     TO authenticated
     USING (auth.uid() = user_id);
 
-CREATE POLICY "用户不能修改自己的等级"
+CREATE POLICY "用户只能更新自己的等级"
     ON public.user_tiers
-    FOR ALL
+    FOR UPDATE
     TO authenticated
-    USING (false);
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
 
 -- ============================================
--- 触发器：新用户注册时自动创建 free 等级记录
+-- 触发器：新用户注册时自动创建 user 等级记录
 -- ============================================
 CREATE OR REPLACE FUNCTION public.handle_new_user_tier()
 RETURNS TRIGGER AS $$
 BEGIN
     INSERT INTO public.user_tiers (user_id, tier)
-    VALUES (NEW.id, 'free')
+    VALUES (NEW.id, 'user')
     ON CONFLICT (user_id) DO NOTHING;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER on_auth_user_created_tier
     AFTER INSERT ON auth.users
@@ -93,5 +95,5 @@ CREATE TRIGGER update_user_tiers_updated_at
 -- 权限
 -- ============================================
 GRANT ALL ON public.registration_requests TO authenticated;
-GRANT ALL ON public.user_tiers TO authenticated;
+GRANT SELECT, UPDATE ON public.user_tiers TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;

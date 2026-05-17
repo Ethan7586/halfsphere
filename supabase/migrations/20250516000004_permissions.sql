@@ -42,14 +42,23 @@ CREATE TRIGGER on_auth_user_created_tier
 /* ── 4. RLS：user_tiers 表策略调整 ── */
 ALTER TABLE user_tiers ENABLE ROW LEVEL SECURITY;
 
-/* 管理员可读写全部 */
+/* 清理旧策略 */
 DROP POLICY IF EXISTS user_tiers_admin_all ON user_tiers;
-CREATE POLICY user_tiers_admin_all ON user_tiers
-  FOR ALL
-  USING (auth.uid() IN (SELECT user_id FROM user_tiers WHERE tier = 'admin'));
-
-/* 用户只能读写自己 */
 DROP POLICY IF EXISTS user_tiers_self ON user_tiers;
-CREATE POLICY user_tiers_self ON user_tiers
-  FOR ALL
+DROP POLICY IF EXISTS "用户只能查看自己的等级" ON user_tiers;
+DROP POLICY IF EXISTS "用户不能修改自己的等级" ON user_tiers;
+
+/* 用户只能 SELECT 自己的记录 */
+CREATE POLICY user_tiers_self_select ON user_tiers
+  FOR SELECT
+  TO authenticated
   USING (auth.uid() = user_id);
+
+/* 用户只能 UPDATE 自己的记录 */
+CREATE POLICY user_tiers_self_update ON user_tiers
+  FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+/* admin 操作走 service_role key 的服务端代码，不通过前端 RLS */
