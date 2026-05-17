@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { randomBytes } from "crypto";
+import { sendApprovalEmail } from "@/lib/email";
 
 const ADMIN_EMAIL = "ethan7586@gsyen.com";
 
@@ -61,6 +62,13 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   if (updateError) {
     console.error("更新申请状态失败:", updateError);
+  }
+
+  // 发送通过邮件（失败不阻断流程）
+  try {
+    await sendApprovalEmail(req.email, req.display_name, tempPassword);
+  } catch (emailErr) {
+    console.error("发送审核通过邮件失败:", emailErr);
   }
 
   return NextResponse.json({

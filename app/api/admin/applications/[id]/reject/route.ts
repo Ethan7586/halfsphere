@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendRejectionEmail } from "@/lib/email";
 
 const ADMIN_EMAIL = "ethan7586@gsyen.com";
 
@@ -25,7 +26,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const { data: req, error: reqError } = await admin
     .from("registration_requests")
-    .select("status")
+    .select("status, email, display_name")
     .eq("id", id)
     .single();
 
@@ -45,6 +46,14 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   if (error) {
     console.error("拒绝申请失败:", error);
     return NextResponse.json({ error: "操作失败" }, { status: 500 });
+  }
+
+  // 发送拒绝邮件（失败不阻断流程）
+  try {
+    const r = req as { email: string; display_name: string; status: string };
+    await sendRejectionEmail(r.email, r.display_name);
+  } catch (emailErr) {
+    console.error("发送拒绝邮件失败:", emailErr);
   }
 
   return NextResponse.json({ success: true });
