@@ -20,16 +20,22 @@ export async function GET() {
   const { error, user } = await requireAdmin();
   if (error) return error;
 
-  const admin = createAdminClient();
-  const { data, error: dbError } = await admin
-    .from("registration_requests")
-    .select("*")
-    .order("created_at", { ascending: false });
+  try {
+    const admin = createAdminClient();
+    const { data, error: dbError } = await admin
+      .from("registration_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (dbError) {
-    console.error("查询申请失败:", dbError);
-    return NextResponse.json({ error: "查询失败" }, { status: 500 });
+    if (dbError) {
+      console.error("查询申请失败:", dbError);
+      return NextResponse.json({ error: "查询失败", detail: dbError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ data: data ?? [] });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("admin/applications GET 异常:", msg);
+    return NextResponse.json({ error: "服务器错误", detail: msg }, { status: 500 });
   }
-
-  return NextResponse.json({ data: data ?? [] });
 }
