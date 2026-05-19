@@ -370,77 +370,62 @@ function PermissionsPanel() {
       <CardHeader>
         <CardLabel>用户权限 / Permissions</CardLabel>
       </CardHeader>
-      <div style={{ padding: "16px 18px" }}>
+      <div style={{ overflowX: "auto" }}>
         {isLoading ? (
-          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12 }}>加载中...</div>
+          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12, padding: "16px 18px" }}>加载中...</div>
         ) : users.length === 0 ? (
-          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12 }}>暂无用户</div>
+          <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12, padding: "16px 18px" }}>暂无用户</div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {users.map((u) => {
-              const isMe = u.id === me?.id;
-              const isOwner = u.tier === "owner";
-              const disabled = isMe || isOwner;
-              return (
-                <div
-                  key={u.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 12px",
-                    borderRadius: 6,
-                    border: `1px solid ${isOwner ? "var(--amber-line)" : "var(--border)"}`,
-                    background: isOwner ? "rgba(255,176,32,0.04)" : "var(--bg-elev-1)",
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: isOwner ? "var(--amber)" : "var(--fg)", display: "flex", alignItems: "center", gap: 6 }}>
-                      {isOwner && <span>♛</span>}
-                      {u.display_name}
-                      <span className="mono" style={{
-                        fontSize: 9,
-                        color: isOwner ? "var(--amber)" : u.tier === "admin" ? "var(--green)" : "var(--fg-faint)",
-                        border: `1px solid ${isOwner ? "var(--amber-line)" : u.tier === "admin" ? "var(--green)" : "var(--border)"}`,
-                        borderRadius: 3,
-                        padding: "1px 4px",
-                      }}>
-                        {u.tier.toUpperCase()}{isMe ? " · ME" : ""}
-                      </span>
-                    </div>
-                    <div className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>{u.email}</div>
-                  </div>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--border)" }}>
+                <th style={{ padding: "8px 18px", textAlign: "left", width: "30%" }}>
+                  <span className="mono" style={{ fontSize: 9.5, color: "var(--fg-faint)", letterSpacing: "0.18em" }}>用户</span>
+                </th>
+                {ALL_PERMS.map((p) => (
+                  <th key={p.key} style={{ padding: "8px 12px", textAlign: "center" }}>
+                    <span className="mono" style={{ fontSize: 9.5, color: "var(--fg-faint)", letterSpacing: "0.14em" }}>{p.label}</span>
+                  </th>
+                ))}
+                <th style={{ padding: "8px 18px", textAlign: "center" }}>
+                  <span className="mono" style={{ fontSize: 9.5, color: "var(--fg-faint)", letterSpacing: "0.14em" }}>角色</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((u) => {
+                const isMe = u.id === me?.id;
+                const isOwner = u.tier === "owner";
+                const isAdmin = u.tier === "admin";
+                return (
+                  <tr
+                    key={u.id}
+                    style={{
+                      borderBottom: "1px solid rgba(38,38,42,0.5)",
+                      background: isOwner ? "rgba(255,176,32,0.03)" : "transparent",
+                    }}
+                  >
+                    {/* 用户信息 */}
+                    <td style={{ padding: "12px 18px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                        {isOwner && <span style={{ color: "var(--amber)", fontSize: 13 }}>♛</span>}
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: isOwner ? "var(--amber)" : "var(--fg)", display: "flex", alignItems: "center", gap: 6 }}>
+                            {u.display_name}
+                            {isMe && <span className="mono" style={{ fontSize: 9, color: "var(--fg-faint)", border: "1px solid var(--border)", borderRadius: 3, padding: "1px 4px" }}>ME</span>}
+                          </div>
+                          <div className="mono" style={{ fontSize: 10, color: "var(--fg-mute)", marginTop: 2 }}>{u.email}</div>
+                        </div>
+                      </div>
+                    </td>
 
-                  {/* Tier selector — owner 行不显示 */}
-                  {!isOwner && (
-                    <select
-                      value={u.tier}
-                      disabled={isMe}
-                      onChange={(e) => updateMutation.mutate({ id: u.id, tier: e.target.value })}
-                      style={{
-                        background: "var(--bg-elev-1)",
-                        border: "1px solid var(--border)",
-                        borderRadius: 4,
-                        padding: "4px 8px",
-                        color: "var(--fg)",
-                        fontSize: 12,
-                        cursor: isMe ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      <option value="member">member</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  )}
-
-                  {/* Permission toggles — owner 行不显示，admin 行全亮不可改 */}
-                  {!isOwner && (
-                    <div style={{ display: "flex", gap: 6 }}>
-                      {ALL_PERMS.map((p) => {
-                        const active = u.tier === "admin" || u.permissions.includes(p.key);
-                        const editable = !isMe && u.tier !== "admin";
-                        return (
+                    {/* 4个权限列 */}
+                    {ALL_PERMS.map((p) => {
+                      const active = isOwner || isAdmin || u.permissions.includes(p.key);
+                      const editable = !isOwner && !isAdmin && !isMe;
+                      return (
+                        <td key={p.key} style={{ padding: "12px", textAlign: "center" }}>
                           <button
-                            key={p.key}
                             disabled={!editable}
                             onClick={() => {
                               if (!editable) return;
@@ -449,29 +434,53 @@ function PermissionsPanel() {
                                 : [...u.permissions, p.key];
                               updateMutation.mutate({ id: u.id, permissions: next });
                             }}
-                            title={isMe ? "不能修改自己" : u.tier === "admin" ? "Admin 自动拥有全部权限" : p.label}
+                            title={isOwner || isAdmin ? "自动拥有全部权限" : isMe ? "不能修改自己" : p.label}
                             style={{
-                              padding: "4px 8px",
-                              borderRadius: 4,
-                              border: `1px solid ${active ? "var(--green)" : "var(--border)"}`,
-                              background: active ? "rgba(74,222,128,0.08)" : "transparent",
-                              color: active ? "var(--green)" : "var(--fg-mute)",
-                              fontSize: 10,
-                              cursor: editable ? "pointer" : "not-allowed",
-                              whiteSpace: "nowrap",
-                              opacity: u.tier === "admin" ? 0.6 : 1,
+                              background: "none",
+                              border: "none",
+                              cursor: editable ? "pointer" : "default",
+                              fontSize: 15,
+                              lineHeight: 1,
+                              opacity: (isOwner || isAdmin) ? 0.5 : 1,
                             }}
                           >
-                            {p.label}
+                            {active ? "✅" : "❌"}
                           </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                        </td>
+                      );
+                    })}
+
+                    {/* 角色列 */}
+                    <td style={{ padding: "12px 18px", textAlign: "center" }}>
+                      {isOwner ? (
+                        <span className="mono" style={{ fontSize: 10, color: "var(--amber)", border: "1px solid var(--amber-line)", borderRadius: 3, padding: "2px 6px" }}>
+                          OWNER
+                        </span>
+                      ) : (
+                        <select
+                          value={u.tier}
+                          disabled={isMe}
+                          onChange={(e) => updateMutation.mutate({ id: u.id, tier: e.target.value })}
+                          style={{
+                            background: "var(--bg-elev-1)",
+                            border: "1px solid var(--border)",
+                            borderRadius: 4,
+                            padding: "3px 7px",
+                            color: isAdmin ? "var(--green)" : "var(--fg-dim)",
+                            fontSize: 11,
+                            cursor: isMe ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          <option value="member">member</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
         {updateMutation.isError && (
           <p style={{ margin: "8px 0 0", fontSize: 12, color: "var(--red)" }}>
