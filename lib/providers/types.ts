@@ -23,5 +23,6 @@ export interface UsageSnapshot {
 export type FetchUsageFn = (
   apiKey: string,
   startDate: string,
-  endDate: string
+  endDate: string,
+  options?: { endpoint_url?: string }
 ) => Promise<UsageSnapshot[]>;

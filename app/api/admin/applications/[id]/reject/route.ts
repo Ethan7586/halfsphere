@@ -1,21 +1,7 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendRejectionEmail } from "@/lib/email";
-
-const ADMIN_EMAIL = "ethan7586@gsyen.com";
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    return { error: NextResponse.json({ error: "未登录" }, { status: 401 }), user: null };
-  }
-  if (user.email !== ADMIN_EMAIL) {
-    return { error: NextResponse.json({ error: "无权限" }, { status: 403 }), user: null };
-  }
-  return { error: null, user };
-}
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { error: authError } = await requireAdmin();

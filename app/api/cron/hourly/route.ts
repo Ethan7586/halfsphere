@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { decrypt } from "@/lib/crypto";
 import * as openaiProvider from "@/lib/providers/openai";
 import * as anthropicProvider from "@/lib/providers/anthropic";
+import * as newApiProvider from "@/lib/providers/new-api";
 
 /* timing-safe comparison helper */
 function timingSafeCompare(a: string, b: string): boolean {
@@ -23,6 +24,7 @@ function timingSafeCompare(a: string, b: string): boolean {
 const PROVIDER_FETCHERS: Record<string, typeof openaiProvider.fetchUsage> = {
   openai: openaiProvider.fetchUsage,
   anthropic: anthropicProvider.fetchUsage,
+  "new-api": newApiProvider.fetchUsage,
 };
 
 export async function GET(request: NextRequest) {
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     // 获取所有用户（使用 service role 绕过 RLS）
     const { data: providers, error: providersError } = await supabase
       .from("providers")
-      .select("id, user_id, name, api_key_encrypted, api_key_iv, api_key_tag")
+      .select("id, user_id, name, endpoint_url, api_key_encrypted, api_key_iv, api_key_tag")
       .order("user_id");
 
     if (providersError) {
@@ -98,7 +100,9 @@ export async function GET(request: NextRequest) {
         );
 
         // 拉取 usage 数据
-        const snapshots = await fetcher(apiKey, startDate, today);
+        const snapshots = await fetcher(apiKey, startDate, today, {
+          endpoint_url: provider.endpoint_url ?? undefined,
+        });
 
         // 写入数据库（UPSERT）
         const upsertErrors: string[] = [];

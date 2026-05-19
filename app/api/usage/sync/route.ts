@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/crypto";
 import * as openaiProvider from "@/lib/providers/openai";
 import * as anthropicProvider from "@/lib/providers/anthropic";
+import * as newApiProvider from "@/lib/providers/new-api";
 
 const PROVIDER_FETCHERS: Record<
   string,
@@ -15,6 +16,7 @@ const PROVIDER_FETCHERS: Record<
 > = {
   openai: openaiProvider.fetchUsage,
   anthropic: anthropicProvider.fetchUsage,
+  "new-api": newApiProvider.fetchUsage,
 };
 
 export async function POST(request: NextRequest) {
@@ -32,7 +34,7 @@ export async function POST(request: NextRequest) {
     // 获取该用户的所有 providers
     const { data: providers, error: providersError } = await supabase
       .from("providers")
-      .select("id, name, api_key_encrypted, api_key_iv, api_key_tag")
+      .select("id, name, endpoint_url, api_key_encrypted, api_key_iv, api_key_tag")
       .eq("user_id", user.id);
 
     if (providersError) {
@@ -76,7 +78,9 @@ export async function POST(request: NextRequest) {
         );
 
         // 拉取 usage 数据
-        const snapshots = await fetcher(apiKey, startDate, today);
+        const snapshots = await fetcher(apiKey, startDate, today, {
+          endpoint_url: provider.endpoint_url ?? undefined,
+        });
 
         // 写入数据库（UPSERT）
         const upsertErrors: string[] = [];

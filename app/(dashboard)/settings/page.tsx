@@ -17,6 +17,7 @@ const PROVIDER_OPTIONS = [
   { value: "gemini", label: "Google Gemini" },
   { value: "deepseek", label: "DeepSeek" },
   { value: "openrouter", label: "OpenRouter" },
+  { value: "new-api", label: "New-API / One-API" },
 ];
 
 export default function SettingsPage() {
@@ -24,6 +25,7 @@ export default function SettingsPage() {
   const [newProvider, setNewProvider] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
+  const [newEndpointUrl, setNewEndpointUrl] = useState("");
   const queryClient = useQueryClient();
   const { tier } = useAuth();
 
@@ -37,7 +39,7 @@ export default function SettingsPage() {
   });
 
   const addMutation = useMutation({
-    mutationFn: async (payload: { name: string; display_name: string; api_key: string }) => {
+    mutationFn: async (payload: { name: string; display_name: string; api_key: string; endpoint_url?: string }) => {
       const res = await fetch("/api/providers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -56,6 +58,7 @@ export default function SettingsPage() {
       setNewProvider("");
       setNewDisplayName("");
       setNewApiKey("");
+      setNewEndpointUrl("");
     },
   });
 
@@ -71,7 +74,12 @@ export default function SettingsPage() {
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!newProvider || !newApiKey) return;
-    addMutation.mutate({ name: newProvider, display_name: newDisplayName || newProvider, api_key: newApiKey });
+    addMutation.mutate({
+      name: newProvider,
+      display_name: newDisplayName || newProvider,
+      api_key: newApiKey,
+      endpoint_url: newEndpointUrl || undefined,
+    });
   }
 
   const providers = data?.data ?? [];
@@ -197,6 +205,19 @@ export default function SettingsPage() {
                   style={{ background: "var(--bg-elev-1)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", color: "var(--fg)", fontSize: 14 }}
                 />
               </div>
+              {newProvider === "new-api" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label className="mono" style={{ fontSize: 9.5, color: "var(--fg-mute)", letterSpacing: "0.18em", textTransform: "uppercase" }}>实例地址</label>
+                  <input
+                    value={newEndpointUrl}
+                    onChange={(e) => setNewEndpointUrl(e.target.value)}
+                    placeholder="https://your-new-api.example.com"
+                    required
+                    style={{ background: "var(--bg-elev-1)", border: "1px solid var(--border)", borderRadius: 6, padding: "10px 12px", color: "var(--fg)", fontSize: 14 }}
+                  />
+                  <span className="mono" style={{ fontSize: 9.5, color: "var(--fg-faint)" }}>New-API / One-API 实例的根地址，不含结尾斜杠</span>
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 <label className="mono" style={{ fontSize: 9.5, color: "var(--fg-mute)", letterSpacing: "0.18em", textTransform: "uppercase" }}>API Key</label>
                 <input
@@ -232,7 +253,7 @@ export default function SettingsPage() {
       </Card>
 
       {/* Permissions — admin only */}
-      {tier === "admin" && <PermissionsPanel />}
+      {(tier === "admin" || tier === "owner") && <PermissionsPanel />}
     </div>
   );
 }
@@ -304,6 +325,7 @@ interface UserRow {
   tier: string;
   permissions: string[];
   last_sign_in_at: string | null;
+  is_owner?: boolean;
 }
 
 const ALL_PERMS = [
@@ -315,6 +337,7 @@ const ALL_PERMS = [
 
 function PermissionsPanel() {
   const queryClient = useQueryClient();
+  const { user: me } = useAuth();
   const { data, isLoading } = useQuery<{ data: UserRow[] }>({
     queryKey: ["users"],
     queryFn: async () => {
@@ -354,74 +377,100 @@ function PermissionsPanel() {
           <div className="mono" style={{ color: "var(--fg-mute)", fontSize: 12 }}>暂无用户</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            {users.map((u) => (
-              <div
-                key={u.id}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "10px 12px",
-                  borderRadius: 6,
-                  border: "1px solid var(--border)",
-                  background: "var(--bg-elev-1)",
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: "var(--fg)" }}>{u.display_name}</div>
-                  <div className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>{u.email}</div>
-                </div>
-
-                {/* Tier selector */}
-                <select
-                  value={u.tier}
-                  onChange={(e) => updateMutation.mutate({ id: u.id, tier: e.target.value })}
+            {users.map((u) => {
+              const isMe = u.id === me?.id;
+              const isOwner = u.tier === "owner";
+              const disabled = isMe || isOwner;
+              return (
+                <div
+                  key={u.id}
                   style={{
-                    background: "var(--bg-elev-1)",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                    padding: "4px 8px",
-                    color: "var(--fg)",
-                    fontSize: 12,
-                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    padding: "10px 12px",
+                    borderRadius: 6,
+                    border: `1px solid ${isOwner ? "var(--amber-line)" : "var(--border)"}`,
+                    background: isOwner ? "rgba(255,176,32,0.04)" : "var(--bg-elev-1)",
                   }}
                 >
-                  <option value="user">user</option>
-                  <option value="admin">admin</option>
-                </select>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 500, color: isOwner ? "var(--amber)" : "var(--fg)", display: "flex", alignItems: "center", gap: 6 }}>
+                      {isOwner && <span>♛</span>}
+                      {u.display_name}
+                      <span className="mono" style={{
+                        fontSize: 9,
+                        color: isOwner ? "var(--amber)" : u.tier === "admin" ? "var(--green)" : "var(--fg-faint)",
+                        border: `1px solid ${isOwner ? "var(--amber-line)" : u.tier === "admin" ? "var(--green)" : "var(--border)"}`,
+                        borderRadius: 3,
+                        padding: "1px 4px",
+                      }}>
+                        {u.tier.toUpperCase()}{isMe ? " · ME" : ""}
+                      </span>
+                    </div>
+                    <div className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>{u.email}</div>
+                  </div>
 
-                {/* Permission toggles */}
-                <div style={{ display: "flex", gap: 6 }}>
-                  {ALL_PERMS.map((p) => {
-                    const active = u.permissions.includes(p.key);
-                    return (
-                      <button
-                        key={p.key}
-                        onClick={() => {
-                          const next = active
-                            ? u.permissions.filter((x) => x !== p.key)
-                            : [...u.permissions, p.key];
-                          updateMutation.mutate({ id: u.id, permissions: next });
-                        }}
-                        title={p.label}
-                        style={{
-                          padding: "4px 8px",
-                          borderRadius: 4,
-                          border: `1px solid ${active ? "var(--green)" : "var(--border)"}`,
-                          background: active ? "rgba(74,222,128,0.08)" : "transparent",
-                          color: active ? "var(--green)" : "var(--fg-mute)",
-                          fontSize: 10,
-                          cursor: "pointer",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {p.label}
-                      </button>
-                    );
-                  })}
+                  {/* Tier selector — owner 行不显示 */}
+                  {!isOwner && (
+                    <select
+                      value={u.tier}
+                      disabled={isMe}
+                      onChange={(e) => updateMutation.mutate({ id: u.id, tier: e.target.value })}
+                      style={{
+                        background: "var(--bg-elev-1)",
+                        border: "1px solid var(--border)",
+                        borderRadius: 4,
+                        padding: "4px 8px",
+                        color: "var(--fg)",
+                        fontSize: 12,
+                        cursor: isMe ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      <option value="member">member</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  )}
+
+                  {/* Permission toggles — owner 行不显示，admin 行全亮不可改 */}
+                  {!isOwner && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      {ALL_PERMS.map((p) => {
+                        const active = u.tier === "admin" || u.permissions.includes(p.key);
+                        const editable = !isMe && u.tier !== "admin";
+                        return (
+                          <button
+                            key={p.key}
+                            disabled={!editable}
+                            onClick={() => {
+                              if (!editable) return;
+                              const next = u.permissions.includes(p.key)
+                                ? u.permissions.filter((x) => x !== p.key)
+                                : [...u.permissions, p.key];
+                              updateMutation.mutate({ id: u.id, permissions: next });
+                            }}
+                            title={isMe ? "不能修改自己" : u.tier === "admin" ? "Admin 自动拥有全部权限" : p.label}
+                            style={{
+                              padding: "4px 8px",
+                              borderRadius: 4,
+                              border: `1px solid ${active ? "var(--green)" : "var(--border)"}`,
+                              background: active ? "rgba(74,222,128,0.08)" : "transparent",
+                              color: active ? "var(--green)" : "var(--fg-mute)",
+                              fontSize: 10,
+                              cursor: editable ? "pointer" : "not-allowed",
+                              whiteSpace: "nowrap",
+                              opacity: u.tier === "admin" ? 0.6 : 1,
+                            }}
+                          >
+                            {p.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {updateMutation.isError && (

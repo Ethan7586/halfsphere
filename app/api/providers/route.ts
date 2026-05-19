@@ -21,6 +21,7 @@ const VALID_PROVIDERS = [
   "gemini",
   "deepseek",
   "openrouter",
+  "new-api",
 ] as const;
 
 // 验证 provider 名称是否合法
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("providers")
-      .select("id, name, display_name, created_at, updated_at")
+      .select("id, name, display_name, endpoint_url, created_at, updated_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
@@ -74,12 +75,19 @@ export async function POST(request: NextRequest) {
     if (proError) return proError;
 
     const body = await request.json();
-    const { name, display_name, api_key } = body;
+    const { name, display_name, api_key, endpoint_url } = body;
 
     // 参数校验
     if (!name || !api_key) {
       return NextResponse.json(
         { error: "缺少必填字段: name, api_key" },
+        { status: 400 }
+      );
+    }
+
+    if (name === "new-api" && !endpoint_url) {
+      return NextResponse.json(
+        { error: "new-api 需要填写实例地址（endpoint_url）" },
         { status: 400 }
       );
     }
@@ -103,8 +111,9 @@ export async function POST(request: NextRequest) {
         api_key_encrypted: ciphertext,
         api_key_iv: iv,
         api_key_tag: tag,
+        endpoint_url: endpoint_url || null,
       })
-      .select("id, name, display_name, created_at, updated_at")
+      .select("id, name, display_name, endpoint_url, created_at, updated_at")
       .single();
 
     if (error) {

@@ -1,20 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-const ADMIN_EMAIL = "ethan7586@gsyen.com";
-
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  if (error || !user) {
-    return { error: NextResponse.json({ error: "未登录" }, { status: 401 }), user: null };
-  }
-  if (user.email !== ADMIN_EMAIL) {
-    return { error: NextResponse.json({ error: "无权限" }, { status: 403 }), user: null };
-  }
-  return { error: null, user };
-}
 
 export async function GET() {
   const { error, user } = await requireAdmin();
@@ -32,7 +18,30 @@ export async function GET() {
       return NextResponse.json({ error: "查询失败", detail: dbError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data: data ?? [] });
+    const apps = data ?? [];
+
+    // 自动 approve：pending 但邮箱已在 auth.users 的申请
+    const pending = apps.filter((a: any) => a.status === "pending");
+    if (pending.length > 0) {
+      const { data: existingUsers } = await admin.auth.admin.listUsers();
+      const registeredEmails = new Set(
+        existingUsers?.users.map((u) => u.email?.toLowerCase())
+      );
+
+      const toAutoApprove = pending.filter((a: any) =>
+        registeredEmails.has(a.email?.toLowerCase())
+      );
+
+      for (const app of toAutoApprove) {
+        await admin
+          .from("registration_requests")
+          .update({ status: "approved", updated_at: new Date().toISOString() } as any)
+          .eq("id", app.id);
+        app.status = "approved"; // 同步本地结果
+      }
+    }
+
+    return NextResponse.json({ data: apps });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("admin/applications GET 异常:", msg);

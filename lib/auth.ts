@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 /* ── Types ── */
 export interface UserTier {
-  tier: "guest" | "user" | "admin";
+  tier: "guest" | "member" | "admin" | "owner";
   permissions: string[];
   granted_by: string | null;
 }
@@ -41,7 +41,7 @@ export async function requireAdmin() {
   if (error) return { user: null, tier: null, error };
 
   const tier = await getUserTier(user.id);
-  if (tier?.tier !== "admin") {
+  if (!tier || (tier.tier !== "admin" && tier.tier !== "owner")) {
     return { user, tier, error: NextResponse.json({ error: "需要管理员权限" }, { status: 403 }) };
   }
   return { user, tier, error: null };
@@ -53,8 +53,8 @@ export async function requirePermission(permission: string) {
   if (error) return { user: null, tier: null, error };
 
   const tier = await getUserTier(user.id);
-  // admin 自动拥有所有权限
-  if (tier?.tier === "admin") {
+  // admin / owner 自动拥有所有权限
+  if (tier?.tier === "admin" || tier?.tier === "owner") {
     return { user, tier, error: null };
   }
   // user 需检查权限列表

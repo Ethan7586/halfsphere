@@ -16,7 +16,7 @@ interface Application {
 }
 
 export default function AdminApplicationsPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, tier, loading: authLoading } = useAuth();
   const router = useRouter();
   const [apps, setApps] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,7 @@ export default function AdminApplicationsPage() {
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user || user.email !== "ethan7586@gsyen.com") {
+    if (!user || (tier !== "admin" && tier !== "owner")) {
       router.push("/");
       return;
     }
@@ -61,6 +61,16 @@ export default function AdminApplicationsPage() {
       }
     } catch (err: any) {
       setResult(err.message);
+    } finally {
+      setActionId(null);
+    }
+  }
+
+  async function dismiss(id: string) {
+    setActionId(id);
+    try {
+      await fetch(`/api/admin/applications/${id}`, { method: "DELETE" });
+      fetchApps();
     } finally {
       setActionId(null);
     }
@@ -205,9 +215,18 @@ export default function AdminApplicationsPage() {
                     {app.status === "approved" ? "已通过" : "已拒绝"}
                   </span>
                 </div>
-                <span className="text-xs text-[#4A4A4F]">
-                  {new Date(app.created_at).toLocaleDateString("zh-CN")}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-[#4A4A4F]">
+                    {new Date(app.created_at).toLocaleDateString("zh-CN")}
+                  </span>
+                  <button
+                    onClick={() => dismiss(app.id)}
+                    disabled={actionId === app.id}
+                    className="flex items-center gap-1 rounded px-2 py-1 text-xs text-[#4A4A4F] transition hover:text-red-400 disabled:opacity-50"
+                  >
+                    <X size={11} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
