@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
-export type Tier = "guest" | "member" | "admin" | "owner";
+export type Tier = "guest" | "user" | "admin" | "owner";
 
 interface AuthState {
   user: User | null;
@@ -39,7 +39,7 @@ export function useAuth() {
             .select("tier, permissions")
             .eq("user_id", user.id)
             .single();
-          tier = (tierData?.tier as Tier) || "member";
+          tier = (tierData?.tier as Tier) || "user";
           permissions = (tierData?.permissions as string[]) ?? [];
         }
 
@@ -73,7 +73,7 @@ export function useAuth() {
             if (mounted && data) {
               setState((prev) => ({
                 ...prev,
-                tier: (data.tier as Tier) || "member",
+                tier: (data.tier as Tier) || "user",
                 permissions: (data.permissions as string[]) ?? [],
               }));
             }

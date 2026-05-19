@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 /* ── Types ── */
 export interface UserTier {
-  tier: "guest" | "member" | "admin" | "owner";
+  tier: "guest" | "user" | "admin" | "owner";
   permissions: string[];
   granted_by: string | null;
 }

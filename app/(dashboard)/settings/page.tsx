@@ -471,7 +471,7 @@ function PermissionsPanel() {
                             cursor: isMe ? "not-allowed" : "pointer",
                           }}
                         >
-                          <option value="member">member</option>
+                          <option value="user">user</option>
                           <option value="admin">admin</option>
                         </select>
                       )}

@@ -30,7 +30,7 @@ export async function GET() {
       email: u.email,
       display_name: u.user_metadata?.display_name ?? u.email?.split("@")[0] ?? "—",
       created_at: u.created_at,
-      tier: (u.email?.toLowerCase() === OWNER_EMAIL ? "owner" : (tierMap.get(u.id)?.tier as string) ?? "member"),
+      tier: (u.email?.toLowerCase() === OWNER_EMAIL ? "owner" : (tierMap.get(u.id)?.tier as string) ?? "user"),
       permissions: (tierMap.get(u.id)?.permissions as string[]) ?? [],
       granted_by: tierMap.get(u.id)?.granted_by ?? null,
       last_sign_in_at: u.last_sign_in_at,
