@@ -130,9 +130,10 @@ CREATE TRIGGER update_registration_requests_updated_at
 -- ============================================
 CREATE TABLE public.user_tiers (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    tier TEXT NOT NULL DEFAULT 'user' CHECK (tier IN ('guest', 'user', 'admin')),
+    tier TEXT NOT NULL DEFAULT 'user' CHECK (tier IN ('guest', 'user', 'admin', 'owner')),
     permissions JSONB DEFAULT '[]',
     granted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    upgraded_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -1,6 +1,14 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+function getResend() {
+  if (!resend) {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) throw new Error("Missing RESEND_API_KEY");
+    resend = new Resend(key);
+  }
+  return resend;
+}
 
 const FROM = "Halfsphere <noreply@halfsphere.com>";
 const LOGIN_URL = "https://halfsphere.com/login";
@@ -107,7 +115,7 @@ export async function sendApprovalEmail(
       Please change your password upon first login.
     </p>`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: "你的 Halfsphere 申请已通过 · Access Granted",
@@ -147,7 +155,7 @@ export async function sendRejectionEmail(email: string, displayName: string) {
       If you have questions, please reply to this email.
     </p>`;
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: "关于你的 Halfsphere 申请 · Application Update",

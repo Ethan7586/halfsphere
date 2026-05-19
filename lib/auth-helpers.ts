@@ -15,7 +15,7 @@ export async function requireAdmin(supabase: any) {
     return { error: NextResponse.json({ error: "未登录" }, { status: 401 }), user: null };
   }
   const tier = await getUserTier(user.id);
-  if (tier?.tier !== "admin") {
+  if (!tier || (tier.tier !== "admin" && tier.tier !== "owner")) {
     return { error: NextResponse.json({ error: "需要管理员权限" }, { status: 403 }), user: null };
   }
   return { error: null, user };

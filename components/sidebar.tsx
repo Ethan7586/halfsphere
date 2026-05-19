@@ -159,7 +159,7 @@ function SystemClock() {
 export function Sidebar() {
   const pathname = usePathname();
   const { user, tier, permissions, signOut, hasPermission } = useAuth();
-  const isAdmin = tier === "admin";
+  const isAdmin = tier === "admin" || tier === "owner";
   const isGuest = !user;
 
   return (

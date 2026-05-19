@@ -19,24 +19,26 @@ DROP TABLE IF EXISTS public.user_tiers CASCADE;
 -- 5. 重建表（正确的结构）
 CREATE TABLE public.user_tiers (
     user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    tier TEXT NOT NULL DEFAULT 'user' CHECK (tier IN ('guest', 'user', 'admin')),
+    tier TEXT NOT NULL DEFAULT 'user' CHECK (tier IN ('guest', 'user', 'admin', 'owner')),
     permissions JSONB DEFAULT '[]',
     granted_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    upgraded_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- 6. 恢复数据
-INSERT INTO public.user_tiers (user_id, tier, permissions, granted_by, created_at, updated_at)
+INSERT INTO public.user_tiers (user_id, tier, permissions, granted_by, upgraded_at, created_at, updated_at)
 SELECT 
     user_id,
     CASE 
         WHEN tier IN ('free', 'pro') THEN 'user'
-        WHEN tier IN ('guest', 'user', 'admin') THEN tier
+        WHEN tier IN ('guest', 'user', 'admin', 'owner') THEN tier
         ELSE 'user'
     END,
     COALESCE(permissions, '[]'::jsonb),
     granted_by,
+    upgraded_at,
     COALESCE(created_at, NOW()),
     COALESCE(updated_at, NOW())
 FROM public.user_tiers_backup

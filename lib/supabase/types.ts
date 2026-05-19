@@ -23,6 +23,7 @@ export interface Database {
           api_key_encrypted: string;
           api_key_iv: string;
           api_key_tag: string;
+          endpoint_url: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -34,6 +35,7 @@ export interface Database {
           api_key_encrypted: string;
           api_key_iv: string;
           api_key_tag: string;
+          endpoint_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -45,6 +47,7 @@ export interface Database {
           api_key_encrypted?: string;
           api_key_iv?: string;
           api_key_tag?: string;
+          endpoint_url?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -195,14 +198,14 @@ export interface Database {
         };
         Insert: {
           user_id: string;
-          tier?: string;
+          tier?: "guest" | "user" | "admin" | "owner";
           upgraded_at?: string;
           permissions?: unknown[] | null;
           granted_by?: string | null;
         };
         Update: {
           user_id?: string;
-          tier?: string;
+          tier?: "guest" | "user" | "admin" | "owner";
           upgraded_at?: string;
           permissions?: unknown[] | null;
           granted_by?: string | null;
